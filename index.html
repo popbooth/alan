@@ -277,6 +277,12 @@ body{
 .img-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-input);border-radius:var(--r)}
 .img-row span{font-size:14px;font-weight:500;min-width:40px}
 .img-input{flex:1;padding:6px 8px;border-radius:8px;border:1px solid var(--sep);background:var(--bg-card);color:var(--txt);font-size:15px;font-weight:600;text-align:center;font-family:var(--font);outline:none;width:60px}
+
+/* Session History */
+.session-item{display:flex;flex-direction:column;padding:10px 14px;border-radius:var(--r);cursor:pointer;transition:background var(--tr);margin-bottom:4px}
+.session-item:hover{background:var(--bg-input)}
+.session-item.active{background:var(--blue);color:#fff}
+.session-item.active span{color:rgba(255,255,255,.7)!important}
 </style>
 </head>
 <body>
@@ -318,6 +324,7 @@ body{
       <button class="btn btn-secondary" id="btnUpload">📂 上传</button>
       <span class="csv-badge none" id="csvBadge">📂 未导入</span>
       <button class="btn btn-primary" id="btnAnalyze">🔄 全链路</button>
+      <button class="btn btn-secondary" id="btnHistory">📋 历史</button>
       <button class="btn btn-secondary" id="btnSearch">🔍 搜索</button>
     </div>
     <div class="input-row">
@@ -464,6 +471,18 @@ body{
     <div style="display:flex;gap:8px">
       <button class="btn btn-primary" onclick="confirmImageScores()" style="flex:1">✅ 确认保存</button>
       <button class="btn btn-secondary" onclick="document.getElementById('imgModal').classList.remove('open')" style="flex:1">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session History Modal -->
+<div class="modal-overlay" id="sessionModal">
+  <div class="modal">
+    <h2>📋 历史对话</h2>
+    <div id="sessionList" style="max-height:400px;overflow-y:auto"><div style="text-align:center;padding:20px;color:var(--txt3)">加载中...</div></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" onclick="loadSelectedSession()" style="flex:1">加载选中</button>
+      <button class="btn btn-secondary" onclick="$('sessionModal').classList.remove('open')" style="flex:1">关闭</button>
     </div>
   </div>
 </div>

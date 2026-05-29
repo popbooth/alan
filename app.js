@@ -873,12 +873,45 @@ async function renderSessionList() {
   const el = $('sessionList')
   if (!el) return
   const sessions = await db.getSessions()
+  if (!sessions.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3)">暂无历史对话</div>'; return }
   el.innerHTML = sessions.map(s =>
-    `<div class="session-item" data-sid="${s.sessionId}">
-      <span>💬 ${new Date(s.lastTime).toLocaleDateString('zh-CN')}</span>
-      <span>${s.count}条</span>
+    `<div class="session-item ${s.sessionId === currentSession ? 'active' : ''}" onclick="selectSession(this)" data-sid="${s.sessionId}">
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+        <span>💬 ${formatSessionDate(s.lastTime)}</span>
+        <span style="font-size:11px;color:var(--txt3)">${s.count}条</span>
+      </div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:2px">${s.preview || ''}</div>
     </div>`
   ).join('')
+}
+
+function selectSession(el) {
+  document.querySelectorAll('.session-item').forEach(e => e.classList.remove('active'))
+  el.classList.add('active')
+  el.scrollIntoView({ block: 'nearest' })
+}
+
+async function loadSelectedSession() {
+  const sel = document.querySelector('.session-item.active')
+  if (!sel) { toast('请选择一个对话'); return }
+  const sid = sel.dataset.sid
+  if (sid === currentSession) { $('sessionModal').classList.remove('open'); return }
+  currentSession = sid
+  await db.setSetting('lastSession', currentSession)
+  await loadChat(currentSession)
+  $('sessionModal').classList.remove('open')
+  toast('💬 已切换到历史对话')
+}
+
+function formatSessionDate(ts) {
+  const d = new Date(ts)
+  const now = new Date()
+  const sameDay = d.toDateString() === now.toDateString()
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1)
+  const isYesterday = d.toDateString() === yesterday.toDateString()
+  if (sameDay) return '今天 ' + d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })
+  if (isYesterday) return '昨天 ' + d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })
+  return d.toLocaleDateString('zh-CN', { month:'2-digit', day:'2-digit' }) + ' ' + d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })
 }
 
 // ===================== 我的Tab =====================
@@ -962,6 +995,9 @@ function bindEvents() {
   // 成绩上传
   $('btnUpload').onclick = () => $('fileInput').click()
   $('fileInput').onchange = handleUpload
+
+  // 历史对话
+  $('btnHistory').onclick = () => { $('sessionModal').classList.add('open'); renderSessionList() }
 
   // 搜索
   $('btnSearch').onclick = () => {
