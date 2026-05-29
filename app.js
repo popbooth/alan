@@ -404,6 +404,7 @@ function renderChat() {
     return `<div class="msg ${m.role}"><div class=bubble>${content}</div><div class=time>${m.time}</div></div>`
   }).join('')
   el.scrollTop = el.scrollHeight
+  renderSidebarList()
 }
 
 function escHtml(s) {
@@ -869,38 +870,30 @@ function saveProfile() {
 
 // ===================== 界面列表 =====================
 
-async function renderSessionList() {
-  const el = $('sessionList')
+async function renderSidebarList() {
+  const el = $('sidebarList')
   if (!el) return
   const sessions = await db.getSessions()
-  if (!sessions.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3)">暂无历史对话</div>'; return }
+  if (!sessions.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:13px">暂无历史对话</div>'; return }
   el.innerHTML = sessions.map(s =>
-    `<div class="session-item ${s.sessionId === currentSession ? 'active' : ''}" onclick="selectSession(this)" data-sid="${s.sessionId}">
-      <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
-        <span>💬 ${formatSessionDate(s.lastTime)}</span>
-        <span style="font-size:11px;color:var(--txt3)">${s.count}条</span>
+    `<div class="sidebar-item ${s.sessionId === currentSession ? 'active' : ''}" onclick="switchSidebarSession('${s.sessionId}')" data-sid="${s.sessionId}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;font-weight:500">${s.previewTitle || '对话'}</span>
+        <span class="si-time" style="font-size:10px;opacity:.6">${s.count}条</span>
       </div>
-      <div style="font-size:11px;color:var(--txt3);margin-top:2px">${s.preview || ''}</div>
+      <span class="si-time" style="font-size:11px;margin-top:2px;opacity:.5">${formatSessionDate(s.lastTime)}</span>
     </div>`
   ).join('')
 }
 
-function selectSession(el) {
-  document.querySelectorAll('.session-item').forEach(e => e.classList.remove('active'))
-  el.classList.add('active')
-  el.scrollIntoView({ block: 'nearest' })
-}
-
-async function loadSelectedSession() {
-  const sel = document.querySelector('.session-item.active')
-  if (!sel) { toast('请选择一个对话'); return }
-  const sid = sel.dataset.sid
-  if (sid === currentSession) { $('sessionModal').classList.remove('open'); return }
+function switchSidebarSession(sid) {
+  if (sid === currentSession) return
   currentSession = sid
-  await db.setSetting('lastSession', currentSession)
-  await loadChat(currentSession)
-  $('sessionModal').classList.remove('open')
-  toast('💬 已切换到历史对话')
+  db.setSetting('lastSession', currentSession)
+  loadChat(currentSession)
+  renderSidebarList()
+  // 窄屏自动关闭侧边栏
+  if (window.innerWidth <= 700) $('chatSidebar').classList.remove('open')
 }
 
 function formatSessionDate(ts) {
@@ -982,6 +975,7 @@ function bindEvents() {
       const tabId = el.dataset.tab
       switchTab(tabId)
       // 切换时渲染对应内容
+      if (tabId === 'tabChat') renderSidebarList()
       if (tabId === 'tabGrades') renderGradesTab()
       if (tabId === 'tabProfile') renderProfileTab()
     }
@@ -996,8 +990,14 @@ function bindEvents() {
   $('btnUpload').onclick = () => $('fileInput').click()
   $('fileInput').onchange = handleUpload
 
-  // 历史对话
-  $('btnHistory').onclick = () => { $('sessionModal').classList.add('open'); renderSessionList() }
+  // 侧边栏新对话
+  $('sidebarNewChat').onclick = newConversation
+  // 侧边栏开关
+  $('btnToggleSidebar').onclick = () => {
+    if (window.innerWidth <= 700) $('chatSidebar').classList.toggle('open')
+    else $('chatSidebar').classList.toggle('hidden')
+    renderSidebarList()
+  }
 
   // 搜索
   $('btnSearch').onclick = () => {

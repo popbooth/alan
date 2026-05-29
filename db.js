@@ -208,9 +208,12 @@ async function getSessions() {
   const all = await getAll('conversations')
   const map = {}
   for (const m of all) {
-    if (!map[m.sessionId]) map[m.sessionId] = { sessionId: m.sessionId, count: 0, lastTime: 0 }
+    if (!map[m.sessionId]) map[m.sessionId] = { sessionId: m.sessionId, count: 0, lastTime: 0, previewTitle: '' }
     map[m.sessionId].count++
     if (m.timestamp > map[m.sessionId].lastTime) map[m.sessionId].lastTime = m.timestamp
+    if (m.role === 'user' && !map[m.sessionId].previewTitle) {
+      map[m.sessionId].previewTitle = m.content.slice(0, 28) + (m.content.length > 28 ? '...' : '')
+    }
   }
   return Object.values(map).sort((a, b) => b.lastTime - a.lastTime)
 }
