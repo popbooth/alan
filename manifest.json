@@ -1,0 +1,14 @@
+{
+  "name": "TIPS — AI升学规划",
+  "short_name": "TIPS",
+  "description": "Alan's Future Plan - 个人专属AI升学规划系统",
+  "start_url": "./index.html?source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f2f7",
+  "theme_color": "#007aff",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

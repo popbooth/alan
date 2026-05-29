@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>TIPS — Alan's Future Plan</title>
+<style>
+/* ========== Variables ========== */
+:root {
+  --font: -apple-system, "SF Pro Text", "SamsungOne", "PingFang SC", sans-serif;
+  --bg: #f2f2f7; --bg-card: #fff; --bg-input: #e5e5ea;
+  --txt: #000; --txt2: #3c3c4399; --txt3: #8e8e93;
+  --blue: #007aff; --red: #ff3b30; --green: #34c759; --orange: #ff9500; --cyan: #5ac8fa;
+  --sep: #c6c6c899; --r: 12px; --rl: 20px; --sh: 0 2px 8px rgba(0,0,0,.08); --tr: .2s ease;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+[data-theme=dark] {
+  --bg: #000; --bg-card: #1c1c1e; --bg-input: #2c2c2e;
+  --txt: #fff; --txt2: #ebebf599; --txt3: #8e8e93;
+  --blue: #0a84ff; --red: #ff453a; --green: #30d158; --orange: #ff9f0a;
+  --sep: #38383a; --sh: 0 2px 8px rgba(0,0,0,.5);
+}
+
+/* ========== Reset ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--txt);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;font-size:15px;line-height:1.5;
+}
+
+/* ========== Header ========== */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:var(--bg-card);
+  border-bottom:.5px solid var(--sep);position:sticky;top:0;z-index:10;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.header-title{display:flex;align-items:center;gap:8px}
+.header-title .logo{font-size:20px}
+.header-title h1{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.header-actions{display:flex;gap:4px}
+.btn-icon{
+  width:34px;height:34px;border-radius:50%;border:none;
+  background:transparent;color:var(--txt);font-size:16px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background var(--tr);
+}
+.btn-icon:active{background:var(--bg-input)}
+
+/* ========== Main + Tabs ========== */
+.main{flex:1;overflow:hidden;position:relative}
+.tab-panel{display:none;height:100%;flex-direction:column}
+.tab-panel.active{display:flex}
+.tab-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* ========== Tab Bar ========== */
+.tab-bar{
+  display:flex;background:var(--bg-card);
+  border-top:.5px solid var(--sep);padding:4px 0;
+  padding-bottom:calc(4px + var(--safe-bottom));flex-shrink:0;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;
+  padding:4px;border:none;background:transparent;
+  color:var(--txt3);font-size:10px;font-weight:500;
+  cursor:pointer;transition:color var(--tr);font-family:var(--font);
+  -webkit-tap-highlight-color:transparent;
+}
+.tab-item.active{color:var(--blue)}
+.tab-item .tab-icon{font-size:20px;line-height:1.2}
+.tab-item .tab-label{font-size:10px}
+
+/* ========== Chat ========== */
+.chat-messages{flex:1;overflow-y:auto;padding:12px 16px}
+.msg{max-width:85%;margin-bottom:12px;animation:msgIn .25s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{margin-left:auto}
+.msg .bubble{padding:10px 14px;border-radius:var(--rl);font-size:15px;line-height:1.6;word-break:break-word}
+.msg.user .bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.msg.ai .bubble{background:var(--bg-card);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.msg .time{font-size:11px;color:var(--txt3);margin-top:3px;padding:0 6px}
+
+.toolbar{
+  display:flex;gap:6px;padding:8px 12px;
+  border-top:.5px solid var(--sep);background:var(--bg-card);
+  flex-wrap:wrap;align-items:center;
+}
+.csv-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 10px;
+  border-radius:20px;font-size:11px;font-weight:500;
+  background:var(--green);color:#fff;
+  max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.csv-badge.none{background:var(--bg-input);color:var(--txt3)}
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 13px;border-radius:var(--r);border:none;
+  font-size:13px;font-weight:500;cursor:pointer;
+  transition:all var(--tr);font-family:var(--font);white-space:nowrap;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:active{opacity:.7}
+.btn-secondary{background:var(--bg-input);color:var(--txt)}
+.btn-secondary:active{opacity:.6}
+.input-row{
+  display:flex;gap:6px;padding:8px 12px;
+  border-top:.5px solid var(--sep);background:var(--bg-card);
+}
+.input-row input{
+  flex:1;padding:10px 14px;border-radius:22px;
+  border:1px solid var(--sep);background:var(--bg-input);
+  color:var(--txt);font-size:15px;font-family:var(--font);outline:none;
+}
+.input-row input:focus{border-color:var(--blue)}
+.btn-send{
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--blue);color:#fff;font-size:17px;
+  cursor:pointer;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;
+}
+.btn-send:active{opacity:.7}
+.empty-state{text-align:center;padding:40px 16px;color:var(--txt3)}
+.empty-state .icon{font-size:48px;margin-bottom:12px;display:block}
+.empty-state h2{font-size:18px;font-weight:600;color:var(--txt);margin-bottom:4px}
+.empty-state p{font-size:13px;line-height:1.6}
+.loading-dots{display:inline-flex;gap:4px;padding:8px 0}
+.loading-dots span{width:6px;height:6px;border-radius:50%;background:var(--txt3);animation:bounce 1.4s infinite ease-in-out both}
+.loading-dots span:nth-child(1){animation-delay:-.32s}
+.loading-dots span:nth-child(2){animation-delay:-.16s}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+
+/* ========== Progress Bar (Analysis) ========== */
+.progress-bar{
+  display:none;align-items:center;gap:10px;
+  padding:10px 16px;background:var(--bg-card);border-bottom:.5px solid var(--sep);
+}
+.progress-bar.show{display:flex}
+.progress-track{flex:1;height:6px;border-radius:3px;background:var(--bg-input);overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s ease}
+.progress-text{font-size:12px;color:var(--txt2);white-space:nowrap}
+
+/* ========== Subject Cards ========== */
+.subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+.subject-card{
+  background:var(--bg-card);border-radius:var(--r);padding:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.s-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.s-name{font-size:14px;font-weight:600}
+.s-score{font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.2}
+.s-max{font-size:13px;color:var(--txt3);font-weight:400}
+.s-bar{height:5px;border-radius:3px;background:var(--bg-input);overflow:hidden;margin:8px 0}
+.s-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.s-bar-fill.green{background:var(--green)}
+.s-bar-fill.blue{background:var(--blue)}
+.s-bar-fill.orange{background:var(--orange)}
+.s-bar-fill.red{background:var(--red)}
+.s-meta{display:flex;gap:10px;font-size:11px;color:var(--txt2);flex-wrap:wrap}
+
+/* ========== Tags ========== */
+.tag{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-green{background:rgba(52,199,89,.15);color:var(--green)}
+.tag-blue{background:rgba(10,132,255,.15);color:var(--blue)}
+.tag-orange{background:rgba(255,149,0,.15);color:var(--orange)}
+.tag-red{background:rgba(255,69,58,.15);color:var(--red)}
+
+/* ========== Charts ========== */
+.charts-section{padding:0 16px 16px}
+.chart-group{margin-bottom:16px}
+.chart-group h3{font-size:14px;font-weight:600;margin-bottom:8px;padding:0 4px}
+.chart-container{height:200px;position:relative}
+.chart-container.radar{height:220px}
+.chart-container.bar{height:180px}
+
+/* ========== Profile Tab ========== */
+.profile-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px}
+.profile-card{
+  display:flex;align-items:center;gap:14px;
+  padding:20px 16px;background:var(--bg-card);margin-bottom:1px;
+}
+.profile-avatar{font-size:40px}
+.profile-info{flex:1}
+.profile-name{font-size:18px;font-weight:700}
+.profile-school{font-size:13px;color:var(--txt2);margin-top:2px}
+.profile-combo{font-size:12px;color:var(--txt3);margin-top:1px}
+.profile-stats{
+  display:flex;background:var(--bg-card);padding:16px;gap:1px;
+  margin-bottom:12px;
+}
+.stat-item{flex:1;text-align:center}
+.stat-num{display:block;font-size:20px;font-weight:700;color:var(--blue)}
+.stat-label{font-size:11px;color:var(--txt3)}
+.profile-section{background:var(--bg-card);padding:16px;margin-bottom:12px}
+.profile-section h3{font-size:14px;font-weight:600;margin-bottom:8px}
+.memory-list{display:flex;flex-direction:column;gap:8px}
+.memory-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-input);border-radius:var(--r);font-size:13px}
+.profile-about{text-align:center;padding:20px;font-size:12px;color:var(--txt3)}
+
+/* ========== Report ========== */
+.report-panel{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
+.report-panel h2{font-size:18px;font-weight:600;margin-bottom:10px}
+.report-panel h3{font-size:16px;font-weight:600;margin:14px 0 6px}
+.report-panel h4{font-size:14px;font-weight:600;margin:10px 0 4px}
+.report-panel p{font-size:14px;line-height:1.7;margin-bottom:6px}
+.report-panel b{color:var(--txt)}
+.report-panel li{margin:3px 0 3px 16px;font-size:14px;line-height:1.6}
+.report-panel table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+.report-panel td{padding:6px 8px;border:1px solid var(--sep)}
+.report-panel hr{border:none;border-top:1px solid var(--sep);margin:14px 0}
+.report-panel pre{background:var(--bg-input);padding:12px;border-radius:var(--r);overflow-x:auto;font-size:13px;margin:8px 0}
+.report-panel code{background:var(--bg-input);padding:1px 4px;border-radius:4px;font-size:13px}
+.report-panel pre code{background:none;padding:0}
+.report-panel .checked{list-style:none;margin-left:0!important;color:var(--green)}
+.report-panel .unchecked{list-style:none;margin-left:0!important;color:var(--txt3)}
+
+/* ========== Modal ========== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+  z-index:30;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg-card);border-radius:var(--rl);
+  width:90%;max-width:420px;max-height:85vh;
+  overflow-y:auto;padding:20px;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+}
+.modal h2{font-size:18px;font-weight:600;margin-bottom:16px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;color:var(--txt2);margin-bottom:4px;font-weight:500}
+.form-group input,.form-group select{
+  width:100%;padding:10px 12px;border-radius:var(--r);
+  border:1px solid var(--sep);background:var(--bg-input);
+  color:var(--txt);font-size:15px;font-family:var(--font);outline:none;
+}
+.form-group select{appearance:none;-webkit-appearance:none}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.switch{
+  width:50px;height:30px;border-radius:15px;background:var(--bg-input);
+  position:relative;cursor:pointer;border:none;
+  transition:background var(--tr);flex-shrink:0;
+}
+.switch.on{background:var(--green)}
+.switch::after{
+  content:"";width:26px;height:26px;border-radius:50%;background:#fff;
+  position:absolute;top:2px;left:2px;transition:transform var(--tr);
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.switch.on::after{transform:translateX(20px)}
+
+/* ========== Toast ========== */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:var(--txt);color:var(--bg);
+  padding:10px 20px;border-radius:22px;
+  font-size:14px;font-weight:500;z-index:50;
+  animation:toastIn .3s ease;box-shadow:var(--sh);
+  text-align:center;max-width:80%;white-space:nowrap;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.hidden{display:none!important}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg-input);border-radius:2px}
+
+/* ========== Image Modal ========== */
+.img-preview{width:100%;max-height:240px;object-fit:contain;border-radius:var(--r);background:var(--bg-input);margin-bottom:12px}
+.img-status{font-size:13px;color:var(--txt2);margin-bottom:8px;text-align:center}
+.img-meta{display:flex;gap:8px;margin-bottom:12px}
+.img-meta input{flex:1;padding:8px 10px;border-radius:var(--r);border:1px solid var(--sep);background:var(--bg-input);color:var(--txt);font-size:13px;font-family:var(--font);outline:none}
+.img-table{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.img-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-input);border-radius:var(--r)}
+.img-row span{font-size:14px;font-weight:500;min-width:40px}
+.img-input{flex:1;padding:6px 8px;border-radius:8px;border:1px solid var(--sep);background:var(--bg-card);color:var(--txt);font-size:15px;font-weight:600;text-align:center;font-family:var(--font);outline:none;width:60px}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-title">
+    <span class="logo">🎯</span>
+    <h1>TIPS — Alan's Future Plan</h1>
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" id="btnNewChat" title="新对话">➕</button>
+    <button class="btn-icon" id="themeBtn" title="主题">🌙</button>
+    <button class="btn-icon" id="settingsBtn" title="设置">⚙️</button>
+  </div>
+</header>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar">
+  <span class="progress-text" id="progressText">⏳ 分析中...</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Tab: 对话 -->
+  <div class="tab-panel active" id="tabChat">
+    <div class="chat-messages" id="chatMessages">
+      <div class="empty-state">
+        <span class="icon">🎯</span>
+        <h2>Hi Alan，我是 TIPS</h2>
+        <p>你的专属升学顾问。上传成绩后，我们可以聊选科、聊专业、聊未来。</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--txt3)">📂 点击下方「上传成绩」开始</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="file" id="fileInput" accept=".csv,image/*" hidden>
+      <button class="btn btn-secondary" id="btnUpload">📂 上传</button>
+      <span class="csv-badge none" id="csvBadge">📂 未导入</span>
+      <button class="btn btn-primary" id="btnAnalyze">🔄 全链路</button>
+      <button class="btn btn-secondary" id="btnSearch">🔍 搜索</button>
+    </div>
+    <div class="input-row">
+      <input type="text" id="chatInput" placeholder="和 TIPS 聊聊近况..." autocomplete="off">
+      <button class="btn-send" id="btnSend">➤</button>
+    </div>
+  </div>
+
+  <!-- Tab: 学情 -->
+  <div class="tab-panel" id="tabGrades">
+    <div class="tab-scroll">
+      <div id="subjectGrid"></div>
+      <div class="charts-section">
+        <div class="chart-group">
+          <h3>成绩趋势</h3>
+          <div class="chart-container"><canvas id="chartTrend"></canvas></div>
+        </div>
+        <div class="chart-group">
+          <h3>能力雷达</h3>
+          <div class="chart-container radar"><canvas id="chartRadar"></canvas></div>
+        </div>
+        <div class="chart-group">
+          <h3>总分趋势</h3>
+          <div class="chart-container"><canvas id="chartTotal"></canvas></div>
+        </div>
+        <div class="chart-group">
+          <h3>各科波动 (CV%)</h3>
+          <div class="chart-container bar"><canvas id="chartVol"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: 报告 -->
+  <div class="tab-panel" id="tabReports">
+    <div class="report-panel" id="reportPanel">
+      <div class="empty-state">
+        <span class="icon">📋</span>
+        <h2>分析报告</h2>
+        <p>点击「全链路分析」生成专属升学报告</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: 我的 -->
+  <div class="tab-panel" id="tabProfile">
+    <div class="profile-scroll" id="profileContent">
+      <div class="empty-state">
+        <span class="icon">👤</span>
+        <h2>个人中心</h2>
+        <p>加载中...</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Tab Bar -->
+<nav class="tab-bar">
+  <button class="tab-item active" data-tab="tabChat"><span class="tab-icon">💬</span><span class="tab-label">对话</span></button>
+  <button class="tab-item" data-tab="tabGrades"><span class="tab-icon">📊</span><span class="tab-label">学情</span></button>
+  <button class="tab-item" data-tab="tabReports"><span class="tab-icon">📋</span><span class="tab-label">报告</span></button>
+  <button class="tab-item" data-tab="tabProfile"><span class="tab-icon">👤</span><span class="tab-label">我的</span></button>
+</nav>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h2>⚙️ 设置</h2>
+    <div class="form-group"><label>DeepSeek API Key</label><input type="password" id="apiKey" placeholder="sk-..."></div>
+    <div class="form-group"><label>Bing Search API Key（可选）</label><input type="password" id="bingKey" placeholder="用于联网搜索最新信息"></div>
+    <div class="form-group">
+      <label>对话模型</label>
+      <select id="chatModel">
+        <option value="deepseek-v4-flash">Flash</option>
+        <option value="deepseek-v4-pro" selected>Pro</option>
+        <option value="deepseek-v4-flash[1m]">Flash [1M]</option>
+        <option value="deepseek-v4-pro[1m]">Pro [1M]</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>分析模型</label>
+      <select id="thinkModel">
+        <option value="deepseek-v4-pro">Pro</option>
+        <option value="deepseek-v4-pro[1m]" selected>Pro [1M]</option>
+      </select>
+    </div>
+    <div class="switch-row"><span>🧠 深度思考</span><button class="switch on" id="thinkingToggle"></button></div>
+    <div class="switch-row"><span>🌙 深色模式</span><button class="switch" id="darkToggle"></button></div>
+    <div class="switch-row"><span>🔐 家长模式</span><button class="switch" id="parentToggle"></button></div>
+    <div class="form-group" style="margin-top:12px">
+      <label>家长密码 (4位数字)</label>
+      <input type="password" id="pinCode" placeholder="默认 0000" maxlength="4" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>月Token预算 (千Token)</label>
+      <input type="number" id="budgetLimit" placeholder="5000 = 5M Token" min="0">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" id="btnSaveSettings" style="flex:1">保存</button>
+      <button class="btn btn-secondary" id="btnCloseSettings" style="flex:1">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Parent Panel Modal -->
+<div class="modal-overlay" id="parentModal">
+  <div class="modal">
+    <h2>🔐 家长面板</h2>
+    <div class="form-group" id="parentPinGroup">
+      <label>输入密码</label>
+      <input type="password" id="parentPinInput" placeholder="4位数字" maxlength="4" inputmode="numeric" style="font-size:20px;text-align:center;letter-spacing:4px">
+    </div>
+    <div id="parentContent" style="display:none">
+      <div class="form-group"><label>💰 月Token预算</label><input type="number" id="parentBudget" min="0"></div>
+      <div class="form-group"><label>本月已用 <span id="parentUsage">0</span> Token</label></div>
+      <div class="chart-container" style="height:140px"><canvas id="parentUsageChart"></canvas></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="exportData()" style="flex:1">📤 导出数据</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="flex:1">📥 导入数据</button>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button class="btn btn-secondary" onclick="clearData()" style="flex:1;color:var(--red)">🗑️ 清除数据</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" id="btnParentUnlock" style="flex:1">解锁</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('parentModal').classList.remove('open')" style="flex:1">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Upload Modal -->
+<div class="modal-overlay" id="imgModal">
+  <div class="modal">
+    <h2>📸 成绩识别</h2>
+    <img class="img-preview" id="imgPreview">
+    <div class="img-status" id="imgStatus">⏳ 识别中...</div>
+    <div class="img-meta">
+      <input id="imgDate" placeholder="考试日期 如2026-04">
+      <input id="imgType" placeholder="类型 如月考">
+      <input id="imgYS" placeholder="学期 高一下">
+    </div>
+    <div class="img-table" id="imgTable"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="confirmImageScores()" style="flex:1">✅ 确认保存</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('imgModal').classList.remove('open')" style="flex:1">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- Scripts: order matters -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="prompts.js"></script>
+<script src="db.js"></script>
+<script src="charts.js"></script>
+<script src="crypto.js"></script>
+<script src="app.js" defer></script>
+<script>if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}</script>
+</body>
+</html>

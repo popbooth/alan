@@ -1,0 +1,48 @@
+# GitHub Pages Deploy — TIPS
+# 推送到 main 时自动构建并部署到 gh-pages
+name: Deploy TIPS
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build memory bundle
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          function walk(dir) {
+            const files = {};
+            if (!fs.existsSync(dir)) return files;
+            for (const f of fs.readdirSync(dir)) {
+              const fp = path.join(dir, f);
+              if (fs.statSync(fp).isDirectory()) Object.assign(files, walk(fp));
+              else files[path.relative('memory', fp).replace(/\\\\/g,'/')] = fs.readFileSync(fp, 'utf8');
+            }
+            return files;
+          }
+          const bundle = {
+            version: new Date().toISOString().slice(0,10),
+            files: walk('memory')
+          };
+          fs.writeFileSync('memory-bundle.json', JSON.stringify(bundle, null, 2));
+          "
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

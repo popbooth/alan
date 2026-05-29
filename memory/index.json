@@ -1,0 +1,93 @@
+{
+  "version": "1.1",
+  "updated": "2026-05-29",
+  "description": "TIPS 知识新鲜度索引 — 过期后自动触发搜索刷新",
+  "entries": [
+    {
+      "id": "policy-001",
+      "title": "江苏新高考3+1+2政策",
+      "category": "policy",
+      "filename": "policy/江苏新高考3+1+2.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-08-27",
+      "source": "江苏省教育考试院",
+      "status": "ready"
+    },
+    {
+      "id": "policy-002",
+      "title": "江苏赋分规则详解",
+      "category": "policy",
+      "filename": "policy/赋分规则.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-08-27",
+      "source": "江苏省教育考试院",
+      "status": "ready"
+    },
+    {
+      "id": "uni-001",
+      "title": "985高校优势专业全览",
+      "category": "universities",
+      "filename": "universities/985高校优势专业.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-11-25",
+      "source": "教育部第四轮学科评估+招生数据",
+      "status": "ready"
+    },
+    {
+      "id": "uni-002",
+      "title": "211高校王牌专业全览",
+      "category": "universities",
+      "filename": "universities/211高校王牌专业.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-11-25",
+      "source": "教育部第四轮学科评估+招生数据",
+      "status": "ready"
+    },
+    {
+      "id": "uni-003",
+      "title": "江苏院校录取数据",
+      "category": "universities",
+      "filename": "universities/江苏院校录取数据.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-11-25",
+      "source": "江苏省教育考试院2025年投档线",
+      "status": "ready"
+    },
+    {
+      "id": "major-001",
+      "title": "物化生组合可报专业",
+      "category": "majors",
+      "filename": "majors/物化生可报专业.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-11-25",
+      "source": "教育部选科指引+高校招生简章",
+      "status": "ready"
+    },
+    {
+      "id": "ind-001",
+      "title": "国家战略新兴产业方向",
+      "category": "industry",
+      "filename": "industry/国家重点产业.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-08-27",
+      "source": "十五五规划纲要+智联招聘2026Q1",
+      "status": "ready"
+    },
+    {
+      "id": "ind-002",
+      "title": "江苏省优势产业分析",
+      "category": "industry",
+      "filename": "industry/江苏优势产业.md",
+      "fetched": "2026-05-29",
+      "expires": "2026-08-27",
+      "source": "江苏省工信厅+各地市统计局",
+      "status": "ready"
+    }
+  ],
+  "rules": {
+    "policy_refresh_days": 90,
+    "university_refresh_days": 180,
+    "major_refresh_days": 180,
+    "industry_refresh_days": 90
+  }
+}
