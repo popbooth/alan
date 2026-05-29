@@ -673,7 +673,7 @@ async function showVolatilityAlert(warnings) {
 
 // ===================== 知识同步 (GitHub → PAD) =====================
 
-const GITHUB_PAGES_URL = 'https://popbooth.github.io/hoho/'
+const GITHUB_PAGES_URL = 'https://popbooth.github.io/alan/'
 
 async function syncKnowledge() {
   if (!GITHUB_PAGES_URL) return
