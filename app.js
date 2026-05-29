@@ -25,7 +25,7 @@ let chatHistory = []          // 当前会话消息 [{role,text,time}]
       if (decrypted) S.apiKey = decrypted
     }
   }
-  S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-pro'
+  S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-flash'
   S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.pinCode = await db.getSetting('pinCode') || '0000'
@@ -386,6 +386,7 @@ async function loadChat(sessionId) {
     _id: m.id
   }))
   renderChat()
+  autoCompress()
 }
 
 function renderChat() {
@@ -876,12 +877,15 @@ async function renderSidebarList() {
   const sessions = await db.getSessions()
   if (!sessions.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:13px">暂无历史对话</div>'; return }
   el.innerHTML = sessions.map(s =>
-    `<div class="sidebar-item ${s.sessionId === currentSession ? 'active' : ''}" onclick="switchSidebarSession('${s.sessionId}')" data-sid="${s.sessionId}">
+    `<div class="sidebar-item ${s.sessionId === currentSession ? 'active' : ''}" onclick="switchSidebarSession('${s.sessionId}')">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:13px;font-weight:500">${s.previewTitle || '对话'}</span>
-        <span class="si-time" style="font-size:10px;opacity:.6">${s.count}条</span>
+        <span style="font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.previewTitle || '对话'}</span>
+        <span class="si-time" style="font-size:10px;opacity:.6;flex-shrink:0">${s.count}条</span>
       </div>
-      <span class="si-time" style="font-size:11px;margin-top:2px;opacity:.5">${formatSessionDate(s.lastTime)}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+        <span class="si-time" style="font-size:11px;opacity:.5">${formatSessionDate(s.lastTime)}</span>
+        <span onclick="event.stopPropagation();deleteSession('${s.sessionId}')" style="font-size:14px;opacity:.4;cursor:pointer;padding:2px 4px;border-radius:4px">✕</span>
+      </div>
     </div>`
   ).join('')
 }
@@ -905,6 +909,33 @@ function formatSessionDate(ts) {
   if (sameDay) return '今天 ' + d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })
   if (isYesterday) return '昨天 ' + d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })
   return d.toLocaleDateString('zh-CN', { month:'2-digit', day:'2-digit' }) + ' ' + d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' })
+}
+
+// ===================== 删除对话 =====================
+
+async function deleteSession(sid) {
+  if (!confirm('删除这个对话？')) return
+  const all = await db.getAll('conversations')
+  for (const m of all) { if (m.sessionId === sid) await db.del('conversations', m.id) }
+  if (sid === currentSession) newConversation()
+  else renderSidebarList()
+  toast('🗑️ 已删除')
+}
+
+async function deleteMessage(msgId) {
+  await db.del('conversations', msgId)
+  await loadChat(currentSession)
+}
+
+// ===================== 记忆自动压缩 =====================
+
+let _lastCompress = 0
+async function autoCompress() {
+  if (Date.now() - _lastCompress < 3600000) return
+  const all = await db.getAll('memory')
+  if (all.length < 5) return
+  _lastCompress = Date.now()
+  await db.addMemory('milestone', '记忆自动归档: 当前共' + all.length + '条', 'system')
 }
 
 // ===================== 我的Tab =====================
