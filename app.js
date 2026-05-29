@@ -673,7 +673,7 @@ async function showVolatilityAlert(warnings) {
 
 // ===================== 知识同步 (GitHub → PAD) =====================
 
-const GITHUB_PAGES_URL = '' // 改为你的 GitHub Pages 地址，如 'https://yourname.github.io/TIPS/'
+const GITHUB_PAGES_URL = 'https://popbooth.github.io/hoho/'
 
 async function syncKnowledge() {
   if (!GITHUB_PAGES_URL) return
