@@ -29,7 +29,7 @@ let chatHistory = []          // 当前会话消息 [{role,text,time}]
   S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.webhookUrl = await db.getSetting('webhookUrl') || ''
-  S.pinCode = await db.getSetting('pinCode') || '000000'
+  S.pinCode = await db.getSetting('pinCode') || '292010'
   S.budgetLimit = await db.getSetting('budgetLimit') || 0
   S.parentMode = await db.getSetting('parentMode') || false
   // 学生信息
