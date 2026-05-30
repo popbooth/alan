@@ -964,6 +964,53 @@ async function sendAlert(title, msg) {
   } catch(e) {}
 }
 
+
+async function exportConfig() {
+  const data = {
+    version: 2,
+    exportDate: new Date().toISOString(),
+    settings: {
+      apiKey: S.apiKey, bingKey: S.bingKey, webhookUrl: S.webhookUrl,
+      chatModel: S.chatModel, thinkModel: S.thinkModel,
+      pinCode: S.pinCode, budgetLimit: S.budgetLimit,
+      darkMode: S.dark, thinking: S.thinking, parentMode: S.parentMode,
+      studentName: S.studentName, studentSchool: S.studentSchool,
+      studentGrade: S.studentGrade, studentCombo: S.studentCombo, gradYear: S.gradYear
+    }
+  }
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}))
+  a.download = 'TIPS-config.json'
+  a.click()
+  toast('✅ 配置已导出')
+}
+
+async function importConfig(e) {
+  const f = e.target.files[0]
+  if (!f) return
+  try {
+    const data = JSON.parse(await f.text())
+    if (!data.settings) throw new Error('格式错误')
+    const s = data.settings
+    if (s.apiKey) { S.apiKey = s.apiKey; await db.setSetting('apiKey', s.apiKey) }
+    if (s.bingKey) { S.bingKey = s.bingKey; await db.setSetting('bingApiKey', s.bingKey) }
+    if (s.webhookUrl) { S.webhookUrl = s.webhookUrl; await db.setSetting('webhookUrl', s.webhookUrl) }
+    if (s.chatModel) { S.chatModel = s.chatModel; await db.setSetting('chatModel', s.chatModel) }
+    if (s.thinkModel) { S.thinkModel = s.thinkModel; await db.setSetting('thinkModel', s.thinkModel) }
+    if (s.pinCode) { S.pinCode = s.pinCode; await db.setSetting('pinCode', s.pinCode) }
+    if (s.budgetLimit) { S.budgetLimit = s.budgetLimit; await db.setSetting('budgetLimit', s.budgetLimit) }
+    if (s.studentName) { S.studentName = s.studentName; await db.setSetting('studentName', s.studentName) }
+    if (s.studentSchool) { S.studentSchool = s.studentSchool; await db.setSetting('studentSchool', s.studentSchool) }
+    if (s.studentGrade) { S.studentGrade = s.studentGrade; await db.setSetting('studentGrade', s.studentGrade) }
+    if (s.studentCombo) { S.studentCombo = s.studentCombo; await db.setSetting('studentCombo', s.studentCombo) }
+    if (s.gradYear) { S.gradYear = s.gradYear; await db.setSetting('gradYear', s.gradYear) }
+    if (s.darkMode !== undefined) { S.dark = s.darkMode; await db.setSetting('darkMode', s.darkMode); applyTheme() }
+    if (s.thinking !== undefined) { S.thinking = s.thinking; await db.setSetting('thinking', s.thinking) }
+    if (s.parentMode !== undefined) { S.parentMode = s.parentMode; await db.setSetting('parentMode', s.parentMode) }
+    toast('✅ 配置已导入')
+  } catch(e) { toast('导入失败: ' + e.message) }
+}
+
 async function checkAppUpdate() {
   try {
     const r = await fetch(GITHUB_PAGES_URL + '?t=' + Date.now())
