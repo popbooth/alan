@@ -968,6 +968,23 @@ async function sendAlert(title, msg) {
 }
 
 
+
+async function exportAllData() {
+  const data = {
+    version: '2.1', exportDate: new Date().toISOString(),
+    grades: await db.getAll('grades'),
+    conversations: await db.getAll('conversations'),
+    reports: await db.getAll('reports'),
+    memory: await db.getAll('memory'),
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = 'TIPS-data-' + new Date().toISOString().slice(0, 10) + '.json'
+  a.click()
+  toast('📤 数据已导出')
+}
+
 async function exportConfig() {
   const data = {
     version: 2,
@@ -1083,6 +1100,13 @@ async function renderProfileTab() {
 
     <div style="padding:0 16px;margin-top:12px">
       <button class="btn btn-secondary" onclick="document.getElementById('settingsBtn').click()" style="width:100%;justify-content:center">⚙️ 打开设置</button>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 16px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="exportConfig()" style="flex:1;justify-content:center">📤 导出配置</button>
+      <button class="btn btn-secondary" onclick="exportAllData()" style="flex:1;justify-content:center">📤 导出数据</button>
+    </div>
+    <div style="padding:0 16px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="checkAppUpdate()" style="width:100%;justify-content:center">🔄 检查更新</button>
     </div>
     ${S.parentMode ? `
     <div style="padding:0 16px;margin-top:8px">
