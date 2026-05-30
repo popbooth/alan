@@ -159,7 +159,10 @@ async function migrateFromLocalStorage() {
     ['lastReport',      localStorage.getItem('afp_report') || null],
   ]
   for (const [k, v] of items) {
-    if (v !== null) await setSetting(k, v)
+    if (v !== null) {
+      const existing = await get("settings", k)
+      if (!existing) await setSetting(k, v)
+    }
   }
 
   // 迁移聊天记录
