@@ -930,11 +930,37 @@ async function deleteMessage(msgId) {
 // ===================== 记忆自动压缩 =====================
 
 let _lastCompress = 0
+
+async function analyzeChildState() {
+  try {
+    const recent = await db.getRecentMessages(30)
+    if (recent.length < 5) return
+    const text = recent.map(m => (m.role === 'user' ? '学生' : 'AI') + ': ' + (m.content || '').slice(0,200)).join('\n')
+    const res = await callDS(P_OBSERVER, text, 'deepseek-v4-flash')
+    if (!res) return
+    await db.addMemory('parent_report', JSON.parse(res), 'system')
+  } catch(e) {}
+}
+
+async function checkAppUpdate() {
+  try {
+    const r = await fetch(GITHUB_PAGES_URL + '?t=' + Date.now())
+    const cache = await caches.match('./index.html')
+    if (cache) {
+      const cached = await cache.text()
+      const fresh = await r.clone().text()
+      if (cached !== fresh) { toast('🔄 更新中...'); setTimeout(() => location.reload(true), 1000); return }
+    }
+    toast('✅ 已是最新')
+  } catch(e) { toast('检查失败') }
+}
+
 async function autoCompress() {
   if (Date.now() - _lastCompress < 3600000) return
   const all = await db.getAll('memory')
   if (all.length < 5) return
   _lastCompress = Date.now()
+  if (Math.random() < 0.2) analyzeChildState()
   await db.addMemory('milestone', '记忆自动归档: 当前共' + all.length + '条', 'system')
 }
 
@@ -992,7 +1018,7 @@ async function renderProfileTab() {
     </div>` : ''}
 
     <div class="profile-about">
-      <p>TIPS v1.5 · AI升学规划</p>
+      <p>TIPS v2.0 · build 2026-05-29</p>
       <p style="font-size:11px;color:var(--txt3)">数据仅存储在本设备 IndexedDB</p>
     </div>`
 }
