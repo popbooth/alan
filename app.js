@@ -6,7 +6,10 @@
 const $ = id => document.getElementById(id)
 let S = {}                    // 设置缓存
 let currentSession = ''       // 当前会话ID
-let chatHistory = []          // 当前会话消息 [{role,text,time}]
+let chatHistory = []
+// 版本
+const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
+          // 当前会话消息 [{role,text,time}]
 
 // ===================== 初始化 =====================
 
@@ -1087,7 +1090,7 @@ async function renderProfileTab() {
     </div>` : ''}
 
     <div class="profile-about">
-      <p>TIPS v2.0 · build 2026-05-29</p>
+      <p>TIPS v2.1.0 · 2026-05-29</p>
       <p style="font-size:11px;color:var(--txt3)">数据仅存储在本设备 IndexedDB</p>
     </div>`
 }
