@@ -25,7 +25,7 @@ let chatHistory = []          // 当前会话消息 [{role,text,time}]
       if (decrypted) S.apiKey = decrypted
     }
   }
-  let _savedM = await db.getSetting('chatModel'); if (_savedM === 'deepseek-v4-pro') { S.chatModel = 'deepseek-v4-flash'; db.setSetting('chatModel', 'deepseek-v4-flash') } else { S.chatModel = _savedM || 'deepseek-v4-flash' }
+  S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-flash'
   S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.webhookUrl = await db.getSetting('webhookUrl') || ''
