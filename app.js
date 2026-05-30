@@ -1051,10 +1051,10 @@ async function renderProfileTab() {
         <input class="profile-edit-name" id="editName" value="${S.studentName}" style="font-size:18px;font-weight:700;background:transparent;border:none;color:var(--txt);width:100%;font-family:var(--font);outline:none">
         <div style="display:flex;gap:4px;margin-top:2px">
           <input id="editSchool" value="${S.studentSchool}" style="flex:1;font-size:13px;background:var(--bg-input);border:none;border-radius:6px;padding:3px 6px;color:var(--txt2);font-family:var(--font);outline:none">
-          <input id="editGrade" value="${S.studentGrade}" style="width:60px;font-size:13px;background:var(--bg-input);border:none;border-radius:6px;padding:3px 6px;text-align:center;color:var(--txt2);font-family:var(--font);outline:none">
+          <select id="editGrade" style="width:70px;font-size:13px;background:var(--bg-input);border:none;border-radius:6px;padding:3px 6px;text-align:center;color:var(--txt2);font-family:var(--font);outline:none"><option value="高一" ${S.studentGrade === '高一' ? 'selected' : ''}>高一</option><option value="高二" ${S.studentGrade === '高二' ? 'selected' : ''}>高二</option><option value="高三" ${S.studentGrade === '高三' ? 'selected' : ''}>高三</option></select>
         </div>
         <div style="display:flex;gap:4px;margin-top:2px">
-          <input id="editCombo" value="${S.studentCombo}" style="flex:1;font-size:12px;background:var(--bg-input);border:none;border-radius:6px;padding:3px 6px;color:var(--txt3);font-family:var(--font);outline:none">
+          <input id="editCombo" list="comboList" value="${S.studentCombo}" style="flex:1;font-size:12px;background:var(--bg-input);border:none;border-radius:6px;padding:3px 6px;color:var(--txt3);font-family:var(--font);outline:none"><datalist id="comboList"><option value="物化生"><option value="物化地"><option value="物化政"><option value="物生地"><option value="物生政"><option value="物地政"><option value="历政地"><option value="历生政"><option value="历生地"><option value="历化政"><option value="历化地"><option value="历化生"></datalist>
           <input id="editGradYear" value="${S.gradYear}" style="width:70px;font-size:12px;background:var(--bg-input);border:none;border-radius:6px;padding:3px 6px;text-align:center;color:var(--txt3);font-family:var(--font);outline:none">
           <button class="btn btn-primary" onclick="saveProfile()" style="padding:3px 10px;font-size:11px">保存</button>
         </div>
