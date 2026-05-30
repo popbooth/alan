@@ -1128,6 +1128,12 @@ async function renderProfileTab() {
       <button class="btn btn-primary" onclick="openParentPanel()" style="width:100%;justify-content:center">🔐 家长面板</button>
     </div>` : ''}
 
+    <div style="display:flex;gap:8px;padding:0 16px;margin-top:8px">
+      <button class="btn btn-secondary" onclick="document.getElementById('impCfgFile').click()" style="flex:1;justify-content:center">📥 导入配置</button>
+      <button class="btn btn-secondary" onclick="checkAppUpdate()" style="flex:1;justify-content:center">🔄 检查更新</button>
+    </div>
+    <input type="file" id="impCfgFile" accept=".json" hidden onchange="importConfig(event)">
+
     <div class="profile-about">
       <p>TIPS v2.1.0 · 2026-05-29</p>
       <p style="font-size:11px;color:var(--txt3)">数据仅存储在本设备 IndexedDB</p>
