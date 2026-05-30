@@ -25,7 +25,7 @@ let chatHistory = []          // 当前会话消息 [{role,text,time}]
       if (decrypted) S.apiKey = decrypted
     }
   }
-  S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-flash'
+  let _savedM = await db.getSetting('chatModel'); if (_savedM === 'deepseek-v4-pro') { S.chatModel = 'deepseek-v4-flash'; db.setSetting('chatModel', 'deepseek-v4-flash') } else { S.chatModel = _savedM || 'deepseek-v4-flash' }
   S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.webhookUrl = await db.getSetting('webhookUrl') || ''
@@ -1148,6 +1148,7 @@ function bindEvents() {
   $('settingsModal').onclick = e => { if (e.target === $('settingsModal')) closeSettings() }
   $('thinkingToggle').onclick = function () { this.classList.toggle('on') }
   $('darkToggle').onclick = toggleDark
+  $('parentToggle').onclick = function () { this.classList.toggle('on') }
 
   // 初始化状态
   updateCsvBadge()
