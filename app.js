@@ -29,7 +29,7 @@ let chatHistory = []          // 当前会话消息 [{role,text,time}]
   S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.webhookUrl = await db.getSetting('webhookUrl') || ''
-  S.pinCode = await db.getSetting('pinCode') || '0000'
+  S.pinCode = await db.getSetting('pinCode') || '000000'
   S.budgetLimit = await db.getSetting('budgetLimit') || 0
   S.parentMode = await db.getSetting('parentMode') || false
   // 学生信息
@@ -155,7 +155,7 @@ function saveSettings() {
   S.chatModel = $('chatModel').value
   S.thinkModel = $('thinkModel').value
   S.thinking = $('thinkingToggle').classList.contains('on')
-  if ($('pinCode')) S.pinCode = $('pinCode').value.padStart(4,'0').slice(0,4)
+  if ($('pinCode')) S.pinCode = $('pinCode').value.padStart(6,'0').slice(0,6)
   if ($('budgetLimit')) S.budgetLimit = parseInt($('budgetLimit').value) || 0
   S.parentMode = $('parentToggle')?.classList.contains('on') || false
   // 加密 API Key (仅当 PIN 非默认时)
