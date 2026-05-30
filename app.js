@@ -1122,13 +1122,7 @@ async function renderProfileTab() {
     <div style="padding:0 16px;margin-top:12px">
       <button class="btn btn-secondary" onclick="document.getElementById('settingsBtn').click()" style="width:100%;justify-content:center">⚙️ 打开设置</button>
     </div>
-    <div style="display:flex;gap:8px;padding:0 16px;margin-top:8px">
-      <button class="btn btn-secondary" onclick="exportConfig()" style="flex:1;justify-content:center">📤 导出配置</button>
-      <button class="btn btn-secondary" onclick="exportAllData()" style="flex:1;justify-content:center">📤 导出数据</button>
-    </div>
-    <div style="padding:0 16px;margin-top:8px">
-      <button class="btn btn-secondary" onclick="checkAppUpdate()" style="width:100%;justify-content:center">🔄 检查更新</button>
-    </div>
+    
     ${S.parentMode ? `
     <div style="padding:0 16px;margin-top:8px">
       <button class="btn btn-primary" onclick="openParentPanel()" style="width:100%;justify-content:center">🔐 家长面板</button>
