@@ -787,6 +787,27 @@ async function renderParentDashboard() {
   if ($('parentUsage')) $('parentUsage').textContent = usage.toLocaleString()
   const logs = await db.getAll('usage_log')
   TC.usageTrend('parentUsageChart', logs)
+  // 显示观察报告
+  const reports = await db.getMemoryByType('parent_report')
+  const el = $('parentReports')
+  if (!el) return
+  if (!reports.length) {
+    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--txt3);font-size:13px">暂无观察报告<br><span style="font-size:11px">孩子多聊几次后会自动生成</span></div>'
+    return
+  }
+  el.innerHTML = reports.slice(-10).reverse().map(r => {
+    let d = typeof r.content === 'string' ? (() => { try { return JSON.parse(r.content) } catch(e) { return {summary: r.content} } })() : r.content
+    const icon = d.mood === 'positive' ? '😊' : d.mood === 'negative' ? '😟' : '😐'
+    const concerns = d.concerns && d.concerns.length ? '<div style="font-size:12px;color:var(--orange);margin-top:4px">⚠️ ' + d.concerns.join('、') + '</div>' : ''
+    return '<div style="background:var(--bg-input);border-radius:var(--r);padding:10px;margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
+        '<span>' + icon + ' 情绪: ' + (d.mood || '未知') + '</span>' +
+        '<span style="color:var(--txt3)">' + (r.date || '') + '</span>' +
+      '</div>' +
+      '<div style="font-size:13px;line-height:1.5">' + (d.summary || d.content || '') + '</div>' +
+      concerns +
+    '</div>'
+  }).join('')
 }
 
 async function saveParentBudget() {
