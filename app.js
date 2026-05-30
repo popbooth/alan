@@ -28,6 +28,7 @@ let chatHistory = []          // 当前会话消息 [{role,text,time}]
   S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-flash'
   S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
+  S.webhookUrl = await db.getSetting('webhookUrl') || ''
   S.pinCode = await db.getSetting('pinCode') || '0000'
   S.budgetLimit = await db.getSetting('budgetLimit') || 0
   S.parentMode = await db.getSetting('parentMode') || false
@@ -111,6 +112,7 @@ async function migrateCSVtoGrades() {
 async function saveCfg() {
   await db.setSetting('apiKey', S.apiKey)
   await db.setSetting('bingApiKey', S.bingKey)
+  await db.setSetting('webhookUrl', S.webhookUrl)
   await db.setSetting('chatModel', S.chatModel)
   await db.setSetting('thinkModel', S.thinkModel)
   await db.setSetting('thinking', S.thinking)
@@ -136,6 +138,7 @@ function openSettings() {
   $('settingsModal').classList.add('open')
   $('apiKey').value = S.apiKey
   $('bingKey').value = S.bingKey
+  if ($('webhookUrl')) $('webhookUrl').value = S.webhookUrl
   $('chatModel').value = S.chatModel
   $('thinkModel').value = S.thinkModel
   $('thinkingToggle').classList.toggle('on', S.thinking)
@@ -148,6 +151,7 @@ function closeSettings() { $('settingsModal').classList.remove('open') }
 function saveSettings() {
   S.apiKey = $('apiKey').value.trim()
   S.bingKey = $('bingKey').value.trim()
+  if ($('webhookUrl')) S.webhookUrl = $('webhookUrl').value.trim()
   S.chatModel = $('chatModel').value
   S.thinkModel = $('thinkModel').value
   S.thinking = $('thinkingToggle').classList.contains('on')
@@ -466,9 +470,16 @@ async function sendMessage() {
       if (!isNaN(score)) {
         const all = await db.getAll('grades')
         const hit = all.filter(g => g.date === gm[1].trim() && g.subject === gm[2].trim())
-        if (hit.length) { hit[0].score = score; await db.set('grades', hit[0]) }
-        else { await db.add('grades', { date: gm[1].trim(), type: '考试', subject: gm[2].trim(), score, fullMark: 100, notes: '对话修正' }) }
-        dr = reply.replace(gm[0], '').trim() + `\n\n✅ ${gm[2].trim()}(${gm[1].trim()}) 已修正为 ${score} 分`
+        if (hit.length) {
+          const orig = hit[0].score
+          hit[0].score = score
+          hit[0].notes = (hit[0].notes || '') + ` 原始${orig}→修正${score}`
+          await db.set('grades', hit[0])
+          await db.addMemory('subject_trace', `${gm[2].trim()}(${gm[1].trim()}): 原始${orig}→修正${score}`, 'system')
+        } else {
+          await db.add('grades', { date: gm[1].trim(), type: '考试', subject: gm[2].trim(), score, fullMark: 100, notes: '对话修正' })
+        }
+        dr = reply.replace(gm[0], '').trim() + `\n\n✅ ${gm[2].trim()}(${gm[1].trim()}) 已更新`
         updateCsvBadge()
       }
     }
@@ -563,6 +574,7 @@ async function runFullAnalysis() {
     await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
     renderReport(a1)
     setProgress('✅ 报告生成完成', 100)
+    sendAlert('📋 新报告已生成', '全链路分析完成')
     toast('✅ 全链路分析完成')
     // 切换到报告 Tab
     setTimeout(() => switchTab('tabReports'), 500)
@@ -669,6 +681,7 @@ async function showVolatilityAlert(warnings) {
   ).join('<br>')
   const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   chatHistory.push({ role: 'assistant', text: `📊 检测到成绩波动\n${msg}\n\n需要我启动全链路分析看看影响吗？`, time: now })
+  sendAlert('📊 成绩波动', warnings.map(w => w.subject + ' ' + (w.direction==='down'?'↓':'↑') + w.pct + '%').join('\n'))
   await db.addMessage('assistant', `📊 检测到成绩波动:\n${warnings.map(w => `${w.subject} ${w.direction === 'down' ? '↓' : '↑'}${w.pct}%`).join(', ')}`, currentSession)
   renderChat()
 }
@@ -939,6 +952,15 @@ async function analyzeChildState() {
     const res = await callDS(P_OBSERVER, text, 'deepseek-v4-flash')
     if (!res) return
     await db.addMemory('parent_report', JSON.parse(res), 'system')
+  } catch(e) {}
+}
+
+
+async function sendAlert(title, msg) {
+  if (!S.webhookUrl) return
+  try {
+    const payload = JSON.stringify({ content: '**' + title + '**\n' + msg })
+    await fetch(S.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload })
   } catch(e) {}
 }
 
