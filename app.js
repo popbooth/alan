@@ -317,6 +317,27 @@ async function callDSVision(sys, imageB64) {
 }
 
 async function parseAndSaveCSV(raw) {
+  // 去重: 删除已存在的同日期同类型数据
+  const existingGrades = await db.getAll('grades')
+  const lines0 = raw.split('\n').filter(l => l.trim())
+  if (lines0.length >= 2) {
+    const h0 = lines0[0].split(',').map(s => s.trim())
+    const dIdx = h0.indexOf('考试日期')
+    const tIdx = h0.indexOf('类型')
+    if (dIdx > -1 && tIdx > -1) {
+      for (let i = 1; i < lines0.length; i++) {
+        const c0 = lines0[i].split(',').map(s => s.trim())
+        const inDate = c0[dIdx], inType = c0[tIdx]
+        if (inDate && inType) {
+          for (const eg of existingGrades) {
+            if (eg.date === inDate && eg.type === inType) {
+              await db.del('grades', eg.id)
+            }
+          }
+        }
+      }
+    }
+  }
   const lines = raw.split('\n').filter(l => l.trim())
   if (lines.length < 2) { toast('CSV格式错误'); return }
   const h = lines[0].split(',').map(s => s.trim())

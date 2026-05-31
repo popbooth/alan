@@ -478,10 +478,11 @@ body{
       <div class="form-group" style="margin-top:12px"><label>🧠 情绪观察报告</label></div>
       <div id="parentReports" style="max-height:300px;overflow-y:auto"></div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="exportConfig()" style="flex:1">📤 导出配置</button>
         <button class="btn btn-secondary" onclick="exportData()" style="flex:1">📤 导出数据</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="flex:1">📥 导入数据</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()" style="flex:1">📥 导入</button>
         <input type="file" id="importFile" accept=".json" hidden>
-        <button class="btn btn-secondary" onclick="clearData()" style="flex:1;color:var(--red)">🗑️ 清除数据</button>
+        <button class="btn btn-secondary" onclick="clearData()" style="flex:1;color:var(--red)">🗑️ 清除</button>
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px">
