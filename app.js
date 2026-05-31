@@ -405,6 +405,8 @@ async function callDS(sys, usr, model) {
 // ===================== 聊天 =====================
 
 async function loadChat(sessionId) {
+  const inp = $("chatInput")
+  if (inp) inp.value = ""
   const msgs = await db.getMessages(sessionId)
   chatHistory = msgs.map(m => ({
     role: m.role,
