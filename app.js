@@ -859,7 +859,8 @@ async function importData(e) {
     if (!data.version) throw new Error('格式错误')
     if (data.grades) for (const g of data.grades) await db.add('grades', g)
     if (data.memory) for (const m of data.memory) await db.add('memory', m)
-    toast('📥 导入完成')
+    toast('📥 导入完成，刷新中...')
+    setTimeout(() => location.reload(), 1000)
   } catch (e) { toast('导入失败: ' + e.message) }
 }
 
@@ -1069,7 +1070,8 @@ async function importConfig(e) {
     if (s.darkMode !== undefined) { S.dark = s.darkMode; await db.setSetting('darkMode', s.darkMode); applyTheme() }
     if (s.thinking !== undefined) { S.thinking = s.thinking; await db.setSetting('thinking', s.thinking) }
     if (s.parentMode !== undefined) { S.parentMode = s.parentMode; await db.setSetting('parentMode', s.parentMode) }
-    toast('✅ 配置已导入')
+    toast('✅ 配置已导入，刷新中...')
+    setTimeout(() => location.reload(), 1000)
   } catch(e) { toast('导入失败: ' + e.message) }
 }
 
