@@ -1029,11 +1029,20 @@ async function exportAllData() {
 }
 
 async function exportConfig() {
+  // 如果 API Key 被加密了，尝试解密后导出
+  let expKey = S.apiKey
+  if (!expKey) {
+    const encrypted = await db.getSetting('encryptedApiKey')
+    if (encrypted && window.TIPSCrypto) {
+      const decrypted = await TIPSCrypto.decrypt(encrypted, S.pinCode)
+      if (decrypted) expKey = decrypted
+    }
+  }
   const data = {
     version: 2,
     exportDate: new Date().toISOString(),
     settings: {
-      apiKey: S.apiKey, bingKey: S.bingKey, webhookUrl: S.webhookUrl,
+      apiKey: expKey, bingKey: S.bingKey, webhookUrl: S.webhookUrl,
       chatModel: S.chatModel, thinkModel: S.thinkModel,
       pinCode: S.pinCode, budgetLimit: S.budgetLimit,
       darkMode: S.dark, thinking: S.thinking, parentMode: S.parentMode,
