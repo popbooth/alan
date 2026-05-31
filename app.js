@@ -551,6 +551,25 @@ function buildGradeContext(grades) {
 
 let _analysisAbort = false
 
+
+async function buildKnowledgeContext() {
+  try {
+    const all = await db.getAll("memory")
+    const recent = all.filter(m => m.type === "interest" || m.type === "search")
+      .sort((a, b) => b.timestamp - a.timestamp).slice(0, 5)
+    if (!recent.length) return ""
+    return "
+
+【最近搜索/知识参考（供参考，不冲突时使用）】
+" + recent.map(r => {
+      const content = typeof r.content === "string" ? r.content.slice(0, 200) : ""
+      return "- " + (r.date || "") + ": " + content
+    }).join("
+") + "
+"
+  } catch(e) { return "" }
+}
+
 async function runFullAnalysis() {
   const grades = await db.getAllGrades()
   if (!grades.length) { toast('请先导入成绩'); return }
@@ -564,6 +583,7 @@ async function runFullAnalysis() {
   _analysisAbort = false
 
   const gradeText = buildGradeContext(grades)
+  const knowText = await buildKnowledgeContext()
   let a2, a4i, a3, a4m, a1
 
   // Agent2 学情分析
