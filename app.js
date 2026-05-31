@@ -164,8 +164,7 @@ function saveSettings() {
   // 加密 API Key (仅当 PIN 非默认时)
   if (S.pinCode !== '0000' && S.apiKey && window.TIPSCrypto) {
     TIPSCrypto.encrypt(S.apiKey, S.pinCode).then(enc => {
-      db.setSetting('encryptedApiKey', enc)
-      db.setSetting('apiKey', '')  // 清除明文
+      db.setSetting('encryptedApiKey', enc)  // 加密备份，不清除明文
     })
   } else {
     db.setSetting('encryptedApiKey', null)
