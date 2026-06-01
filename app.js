@@ -273,6 +273,7 @@ async function confirmImageScores() {
   for (const [subj, score] of Object.entries(scores)) {
     if (score != null) await db.add('grades', { date, type, subject: subj, score, fullMark: 100, yearSemester: ys, notes: '图片识别' })
   }
+  await db.setSetting('gradeVersion', String(Date.now()))
   $('imgModal').classList.remove('open')
   updateCsvBadge()
   toast('✅ 成绩已保存')
