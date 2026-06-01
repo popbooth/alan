@@ -29,7 +29,7 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
     }
   }
   S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-flash'
-  S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
+  var _tm = await db.getSetting('thinkModel'); S.thinkModel = (_tm && _tm.indexOf('[1m]') > 0) ? 'deepseek-v4-pro' : (_tm || 'deepseek-v4-pro')
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.webhookUrl = await db.getSetting('webhookUrl') || ''
   S.pinCode = await db.getSetting('pinCode') || '292010'
