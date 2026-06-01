@@ -590,6 +590,18 @@ async function runFullAnalysis() {
 
   const gradeText = buildGradeContext(grades)
   const knowText = await buildKnowledgeContext()
+  const _cacheKey = "g" + grades.map(g => g.date + g.type).join(",") + "|m" + (await db.getAll("memory")).length
+  const _prevCache = await db.get("settings", "analysisCache")
+  if (_prevCache && _prevCache.value && _prevCache.value.key === _cacheKey) {
+    const cached = _prevCache.value.reportId ? await db.get("reports", _prevCache.value.reportId) : null
+    if (cached) {
+      renderReport(cached.content)
+      setProgress("✅ 成绩无变化，显示上次报告", 100)
+      setTimeout(function(){ switchTab("tabReports"); resetBtn() }, 500)
+      toast("📋 上次报告已缓存，直接显示")
+      return
+    }
+  }
   let a2, a4i, a3, a4m, a1
 
   // Agent2 学情分析
@@ -629,6 +641,7 @@ async function runFullAnalysis() {
       renderReport(a1)
       setProgress('✅ 报告生成完成', 100)
       S.thinking = _saveThink
+      db.getAll('reports').then(function(rr){ var last = rr.sort(function(a,b){return b.timestamp-a.timestamp})[0]; if(last) db.set('settings', {key:'analysisCache', value:{key:_cacheKey, reportId:last.id}}) })
       sendAlert('📋 新报告已生成', '全链路分析完成')
       toast('✅ 全链路分析完成')
       setTimeout(() => switchTab('tabReports'), 500)
