@@ -64,7 +64,7 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
   syncKnowledge()
   // 知识新鲜度检查
   checkKnowledgeFreshness()
-})()
+})().catch(e => console.error("TIPS init error:", e))
 
 // ===================== CSV 迁移 =====================
 
@@ -137,7 +137,7 @@ function applyTheme() {
 }
 function toggleDark() { S.dark = !S.dark; saveCfg(); applyTheme() }
 
-function openSettings() {
+function openSettings() { const m = $("settingsModal"); if (!m) { toast("设置面板加载失败"); return }
   $('settingsModal').classList.add('open')
   $('apiKey').value = S.apiKey
   $('bingKey').value = S.bingKey
