@@ -29,7 +29,7 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
     }
   }
   S.chatModel = await db.getSetting('chatModel') || 'deepseek-v4-flash'
-  var _tm = await db.getSetting('thinkModel'); S.thinkModel = (_tm && _tm.indexOf('[1m]') > 0) ? 'deepseek-v4-pro' : (_tm || 'deepseek-v4-pro')
+  S.thinkModel = await db.getSetting('thinkModel') || 'deepseek-v4-pro[1m]'
   S.bingKey = await db.getSetting('bingApiKey') || ''
   S.webhookUrl = await db.getSetting('webhookUrl') || ''
   S.pinCode = await db.getSetting('pinCode') || '292010'
@@ -384,7 +384,7 @@ async function callDS(sys, usr, model, retries = 1) {
   }
   if (S.thinking) body.thinking = { type: 'enabled' }
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 60000)
+  const timer = setTimeout(() => controller.abort(), 180000)
   try {
     const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
@@ -615,6 +615,7 @@ async function runFullAnalysis() {
   if (!a4m || _analysisAbort) { setProgress("❌ 专业院校匹配失败，请重试", 75); setTimeout(() => resetBtn(), 2000); return }
 
   // Agent1 总控报告
+  var _saveThink = S.thinking; S.thinking = false
   setProgress('📋 [5/5] 生成总控报告中...', 90)
   a1 = await callDS(P1,
     `【Agent2 学情报告】\n${a2}\n\n【Agent4 产业趋势】\n${a4i}\n\n【Agent3 组合策略】\n${a3}\n\n【Agent4 专业院校】\n${a4m}\n\n请整合以上所有分析结果，输出完整结构化报告。`,
@@ -627,13 +628,14 @@ async function runFullAnalysis() {
       await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
       renderReport(a1)
       setProgress('✅ 报告生成完成', 100)
+      S.thinking = _saveThink
       sendAlert('📋 新报告已生成', '全链路分析完成')
       toast('✅ 全链路分析完成')
       setTimeout(() => switchTab('tabReports'), 500)
     } catch(e) { console.error('save report error:', e) }
   }
   resetBtn()
-  function resetBtn() { clearTimeout(safetyTimer); btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.remove('show') }
+  function resetBtn() { S.thinking = _saveThink || true; clearTimeout(safetyTimer); btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.remove('show') }
 }
 
 function setProgress(text, pct) {
@@ -1128,7 +1130,7 @@ async function checkAppUpdate() {
 }
 
 async function autoCompress() {
-  if (Date.now() - _lastCompress < 3600000) return
+  if (Date.now() - _lastCompress < 31800000) return
   const all = await db.getAll('memory')
   if (all.length < 5) return
   _lastCompress = Date.now()
