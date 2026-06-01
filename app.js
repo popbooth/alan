@@ -636,6 +636,13 @@ async function runFullAnalysis() {
   function resetBtn() { clearTimeout(safetyTimer); btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.remove('show') }
 }
 
+function setProgress(text, pct) {
+  var el = document.getElementById("progressText");
+  var bar = document.getElementById("progressFill");
+  if (el) el.textContent = text;
+  if (bar) bar.style.width = pct + "%"
+}
+
 // ===================== 学情 Tab 渲染 =====================
 
 const TIER_MAP = { 优势: { color: 'green', label: '优势' }, 稳定: { color: 'blue', label: '稳定' }, 临界提分: { color: 'orange', label: '临界' }, 薄弱: { color: 'red', label: '薄弱' } }
