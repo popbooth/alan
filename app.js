@@ -54,7 +54,8 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
   await loadChat(currentSession)
 
   // 加载报告
-  const report = await db.getLatestReport()
+  var report = await db.getLatestReport()
+  if (!report) { var _rid2 = await db.getSetting('lastReportId'); if (_rid2) report = await db.get('reports', _rid2) }
   if (report) renderReport(report.content)
 
   // 绑定事件
@@ -638,7 +639,8 @@ async function runFullAnalysis() {
   clearTimeout(safetyTimer)
   if (a1 && !_analysisAbort) {
     try {
-      await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
+      var _rid = await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
+      if (_rid) await db.setSetting('lastReportId', _rid)
       renderReport(a1)
       setProgress('✅ 报告生成完成', 100)
       S.thinking = _saveThink
