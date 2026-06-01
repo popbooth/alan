@@ -384,7 +384,7 @@ async function callDS(sys, usr, model, retries = 1) {
   }
   if (S.thinking) body.thinking = { type: 'enabled' }
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 120000)
+  const timer = setTimeout(() => controller.abort(), 60000)
   try {
     const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
@@ -593,7 +593,7 @@ async function runFullAnalysis() {
 
   // Agent2 学情分析
   setProgress('📊 学情分析...', 15)
-  a2 = await callDS(P2, '成绩数据:\n' + gradeText, S.thinkModel)
+  a2 = await callDS(P2, '成绩数据:\n' + gradeText, "deepseek-v4-flash")
   if (!a2 || _analysisAbort) { resetBtn(); return }
 
   // Agent4 产业趋势
@@ -614,7 +614,7 @@ async function runFullAnalysis() {
   if (!a4m || _analysisAbort) { resetBtn(); return }
 
   // Agent1 总控报告
-  setProgress('📋 生成总控报告...', 90)
+  setProgress('📋 [5/5] 生成总控报告中...', 90)
   a1 = await callDS(P1,
     `【Agent2 学情报告】\n${a2}\n\n【Agent4 产业趋势】\n${a4i}\n\n【Agent3 组合策略】\n${a3}\n\n【Agent4 专业院校】\n${a4m}\n\n请整合以上所有分析结果，输出完整结构化报告。`,
     S.thinkModel
