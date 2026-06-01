@@ -513,6 +513,7 @@ async function sendMessage() {
           await db.add('grades', { date: gm[1].trim(), type: '考试', subject: gm[2].trim(), score, fullMark: 100, notes: '对话修正' })
         }
         dr = reply.replace(gm[0], '').trim() + `\n\n✅ ${gm[2].trim()}(${gm[1].trim()}) 已更新`
+        await db.setSetting("gradeVersion", String(Date.now()))
         updateCsvBadge()
       }
     }
@@ -590,7 +591,7 @@ async function runFullAnalysis() {
 
   const gradeText = buildGradeContext(grades)
   const knowText = await buildKnowledgeContext()
-  const _cacheKey = "g" + grades.map(g => g.date + g.type).join(",")
+  var _gv = await db.getSetting("gradeVersion"); const _cacheKey = "g" + grades.map(g => g.date + g.type).join(",") + "|" + (_gv || "0")
   const _prevCache = await db.get("settings", "analysisCache")
   if (_prevCache && _prevCache.value && _prevCache.value.key === _cacheKey) {
     const cached = _prevCache.value.reportId ? await db.get("reports", _prevCache.value.reportId) : null
