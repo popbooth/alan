@@ -370,7 +370,7 @@ async function parseAndSaveCSV(raw) {
 
 // ===================== DeepSeek API =====================
 
-async function callDS(sys, usr, model) {
+async function callDS(sys, usr, model, retries = 1) {
   if (!S.apiKey) { toast('请先配置 API Key'); return null }
   await checkBudget()
   const m = model || S.chatModel
@@ -383,21 +383,27 @@ async function callDS(sys, usr, model) {
     stream: false
   }
   if (S.thinking) body.thinking = { type: 'enabled' }
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 120000)
   try {
     const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.apiKey },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: controller.signal
     })
+    clearTimeout(timer)
     const d = await r.json()
     if (d.error) throw new Error(d.error.message)
-    // 记录 Token 用量
-    if (d.usage) {
-      db.logUsage(m, d.usage.prompt_tokens || 0, d.usage.completion_tokens || 0)
-    }
+    if (d.usage) db.logUsage(m, d.usage.prompt_tokens || 0, d.usage.completion_tokens || 0)
     return d.choices[0].message.content
   } catch (e) {
-    toast('出错了: ' + e.message)
+    clearTimeout(timer)
+    if (retries > 0 && e.name !== 'AbortError') {
+      await new Promise(r => setTimeout(r, 2000))
+      return callDS(sys, usr, model, retries - 1)
+    }
+    toast('请求失败: ' + (e.name === 'AbortError' ? '超时' : e.message))
     return null
   }
 }
@@ -482,7 +488,9 @@ async function sendMessage() {
   renderChat()
 
   const ctx = await buildContext()
-  const reply = await callDS(P0, ctx + '\n\nAlan: ' + txt)
+  const recentHistory = chatHistory.slice(-8).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }))
+  const historyContext = recentHistory.length ? '\n\n【最近对话】\n' + recentHistory.map(m => (m.role === 'user' ? 'Alan: ' : 'TIPS: ') + m.content).join('\n') + '\n\n---\n' : ''
+  const reply = await callDS(P0, ctx + historyContext + 'Alan: ' + txt)
   chatHistory.pop()
 
   if (reply) {
