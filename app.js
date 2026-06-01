@@ -586,11 +586,11 @@ async function runFullAnalysis() {
   btn.disabled = true
   if (progress) progress.classList.add('show')
   _analysisAbort = false
-  const safetyTimer = setTimeout(() => { _analysisAbort = true; resetBtn(); toast('⏰ 分析超时，请重试') }, 300000)
+  const safetyTimer = setTimeout(() => { _analysisAbort = true; resetBtn(); toast('⏰ 分析超时，请重试') }, 600000)
 
   const gradeText = buildGradeContext(grades)
   const knowText = await buildKnowledgeContext()
-  const _cacheKey = "g" + grades.map(g => g.date + g.type).join(",") + "|m" + (await db.getAll("memory")).length
+  const _cacheKey = "g" + grades.map(g => g.date + g.type).join(",")
   const _prevCache = await db.get("settings", "analysisCache")
   if (_prevCache && _prevCache.value && _prevCache.value.key === _cacheKey) {
     const cached = _prevCache.value.reportId ? await db.get("reports", _prevCache.value.reportId) : null
@@ -611,7 +611,7 @@ async function runFullAnalysis() {
 
   // Agent4 产业趋势
   setProgress('🏭 产业趋势分析...', 35)
-  a4i = await callDS(P4I, '学情数据:\n' + a2, S.thinkModel)
+  a4i = await callDS(P4I, '学情数据:\n' + a2, 'deepseek-v4-pro')
   if (!a4i || _analysisAbort) { setProgress("❌ 产业趋势分析失败，请重试", 35); setTimeout(() => resetBtn(), 2000); return }
   // 缓存产业知识
   await db.addMemory('interest', '产业趋势分析:\n' + a4i.slice(0, 500), 'analysis')
@@ -631,7 +631,7 @@ async function runFullAnalysis() {
   setProgress('📋 [5/5] 生成总控报告中...', 90)
   a1 = await callDS(P1,
     `【Agent2 学情报告】\n${a2}\n\n【Agent4 产业趋势】\n${a4i}\n\n【Agent3 组合策略】\n${a3}\n\n【Agent4 专业院校】\n${a4m}\n\n请整合以上所有分析结果，输出完整结构化报告。`,
-    'deepseek-v4-flash'
+    'deepseek-v4-pro'
   )
 
   clearTimeout(safetyTimer)
