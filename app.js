@@ -631,7 +631,7 @@ async function runFullAnalysis() {
   setProgress('📋 [5/5] 生成总控报告中...', 90)
   a1 = await callDS(P1,
     `【Agent2 学情报告】\n${a2}\n\n【Agent4 产业趋势】\n${a4i}\n\n【Agent3 组合策略】\n${a3}\n\n【Agent4 专业院校】\n${a4m}\n\n请整合以上所有分析结果，输出完整结构化报告。`,
-    S.thinkModel
+    'deepseek-v4-flash'
   )
 
   clearTimeout(safetyTimer)
