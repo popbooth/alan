@@ -938,7 +938,44 @@ async function checkBudget() {
 
 function renderReport(md) {
   const el = $('reportPanel')
-  el.innerHTML = md2html(md)
+  el.innerHTML = '<div style="margin-bottom:8px;display:flex;gap:8px" id="reportTabs"><button class="btn btn-secondary" onclick="showReportList()" style="flex:1;justify-content:center;font-size:12px">📋 历史</button><button class="btn btn-secondary" onclick="exportReport()" style="flex:1;justify-content:center;font-size:12px">📤 导出</button></div>' + md2html(md)
+}
+
+function showReportList() {
+  db.getAll('reports').then(function(all) {
+    all.sort(function(a,b){return b.timestamp - a.timestamp})
+    if (!all.length) { toast('暂无历史报告'); return }
+    var h = '<div style="margin-bottom:8px"><button class="btn btn-secondary" onclick="showLatestReport()" style="font-size:12px">⬅ 最新报告</button></div><h3>📋 历史报告</h3>'
+    all.forEach(function(r,i) {
+      h += '<div style="padding:10px 14px;background:var(--bg-card);border-radius:12px;margin-bottom:6px;cursor:pointer" onclick="showReport(' + r.id + ')">'
+      h += '<div style="font-size:13px;font-weight:500">报告 #' + (i+1) + '</div>'
+      h += '<div style="font-size:11px;color:var(--txt3);margin-top:4px">' + r.date + '</div></div>'
+    })
+    $('reportPanel').innerHTML = h
+  })
+}
+
+function showLatestReport() {
+  db.getAll('reports').then(function(all) {
+    all.sort(function(a,b){return b.timestamp - a.timestamp})
+    if (all.length) renderReport(all[0].content)
+  })
+}
+
+function showReport(id) {
+  db.get('reports', id).then(function(r) {
+    if (r) renderReport(r.content)
+  })
+}
+
+async function exportReport() {
+  var r = await db.getLatestReport()
+  if (!r) { toast('暂无报告'); return }
+  var a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([r.content], {type:'text/markdown'}))
+  a.download = 'TIPS报告_' + r.date + '.md'
+  a.click()
+  toast('✅ 已导出')
 }
 
 function md2html(t) {
