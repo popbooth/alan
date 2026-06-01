@@ -151,15 +151,22 @@ body{
 .loading-dots span:nth-child(2){animation-delay:-.16s}
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 
-/* ========== Progress Bar (Analysis) ========== */
-.progress-bar{
-  display:none;align-items:center;gap:10px;
-  padding:10px 16px;background:var(--bg-card);border-bottom:.5px solid var(--sep);
+/* ========== Analysis Progress Overlay ========== */
+.progress-overlay{
+  display:none;position:fixed;inset:0;z-index:15;
+  background:rgba(0,0,0,.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
 }
-.progress-bar.show{display:flex}
-.progress-track{flex:1;height:6px;border-radius:3px;background:var(--bg-input);overflow:hidden}
-.progress-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .4s ease}
-.progress-text{font-size:12px;color:var(--txt2);white-space:nowrap}
+.progress-overlay.show{display:flex}
+.progress-card{
+  background:var(--bg-card);border-radius:var(--rl);padding:24px 32px;
+  width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2);
+}
+.progress-title{font-size:17px;font-weight:600;margin-bottom:16px}
+.progress-step{font-size:14px;color:var(--txt2);margin-bottom:12px;min-height:20px}
+.progress-track{height:6px;border-radius:3px;background:var(--bg-input);overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .6s ease}
+.progress-agent{font-size:11px;color:var(--txt3)}
 
 /* ========== Subject Cards ========== */
 .subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
@@ -319,9 +326,14 @@ body{
 </header>
 
 <!-- Progress Bar -->
-<div class="progress-bar" id="progressBar">
-  <span class="progress-text" id="progressText">⏳ 分析中...</span>
-  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<!-- Analysis Progress Overlay -->
+<div class="progress-overlay" id="progressBar">
+  <div class="progress-card">
+    <div class="progress-title">🔬 全链路分析中</div>
+    <div class="progress-step" id="progressText">📊 学情画像分析中...</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-agent">5 个分析模块依次执行中，请稍候</div>
+  </div>
 </div>
 
 <!-- Main Content -->

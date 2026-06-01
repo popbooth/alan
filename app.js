@@ -584,7 +584,7 @@ async function runFullAnalysis() {
   const progress = $('progressBar')
   btn.textContent = '⏳ 分析中...'
   btn.disabled = true
-  if (progress) progress.classList.remove('hidden')
+  if (progress) progress.classList.add('show')
   _analysisAbort = false
   const safetyTimer = setTimeout(() => { _analysisAbort = true; resetBtn(); toast('⏰ 分析超时，请重试') }, 300000)
 
@@ -633,7 +633,7 @@ async function runFullAnalysis() {
     } catch(e) { console.error('save report error:', e) }
   }
   resetBtn()
-  function resetBtn() { clearTimeout(safetyTimer); btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.add('hidden') }
+  function resetBtn() { clearTimeout(safetyTimer); btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.remove('show') }
 }
 
 // ===================== 学情 Tab 渲染 =====================
