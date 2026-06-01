@@ -936,6 +936,8 @@ async function checkBudget() {
 
 // ===================== 报告 =====================
 
+function renderReportList() {}
+
 function renderReport(md) {
   const el = $('reportPanel')
   el.innerHTML = '<div style="margin-bottom:8px;display:flex;gap:8px" id="reportTabs"><button class="btn btn-secondary" onclick="showReportList()" style="flex:1;justify-content:center;font-size:12px">📋 历史</button><button class="btn btn-secondary" onclick="exportReport()" style="flex:1;justify-content:center;font-size:12px">📤 导出</button></div>' + md2html(md)
