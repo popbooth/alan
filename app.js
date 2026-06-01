@@ -57,6 +57,7 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
   var report = await db.getLatestReport()
   if (!report) { var _rid2 = await db.getSetting('lastReportId'); if (_rid2) report = await db.get('reports', _rid2) }
   if (report) renderReport(report.content)
+  renderReportList()
 
   // 绑定事件
   bindEvents()
