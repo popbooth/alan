@@ -586,6 +586,7 @@ async function runFullAnalysis() {
   btn.disabled = true
   if (progress) progress.classList.remove('hidden')
   _analysisAbort = false
+  const safetyTimer = setTimeout(() => { _analysisAbort = true; resetBtn(); toast('⏰ 分析超时，请重试') }, 300000)
 
   const gradeText = buildGradeContext(grades)
   const knowText = await buildKnowledgeContext()
@@ -620,17 +621,19 @@ async function runFullAnalysis() {
     S.thinkModel
   )
 
+  clearTimeout(safetyTimer)
   if (a1 && !_analysisAbort) {
-    await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
-    renderReport(a1)
-    setProgress('✅ 报告生成完成', 100)
-    sendAlert('📋 新报告已生成', '全链路分析完成')
-    toast('✅ 全链路分析完成')
-    // 切换到报告 Tab
-    setTimeout(() => switchTab('tabReports'), 500)
+    try {
+      await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
+      renderReport(a1)
+      setProgress('✅ 报告生成完成', 100)
+      sendAlert('📋 新报告已生成', '全链路分析完成')
+      toast('✅ 全链路分析完成')
+      setTimeout(() => switchTab('tabReports'), 500)
+    } catch(e) { console.error('save report error:', e) }
   }
   resetBtn()
-  function resetBtn() { btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.add('hidden') }
+  function resetBtn() { clearTimeout(safetyTimer); btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.add('hidden') }
 }
 
 // ===================== 学情 Tab 渲染 =====================
