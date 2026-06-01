@@ -765,6 +765,7 @@ async function syncKnowledge() {
 
 /** 检查本地知识新鲜度，过期时自动搜索刷新 */
 async function checkKnowledgeFreshness() {
+  if (location.protocol === "file:") return
   try {
     const r = await fetch('./memory/index.json?t=' + Date.now())
     if (!r.ok) return
