@@ -600,19 +600,19 @@ async function runFullAnalysis() {
   // Agent4 产业趋势
   setProgress('🏭 产业趋势分析...', 35)
   a4i = await callDS(P4I, '学情数据:\n' + a2, S.thinkModel)
-  if (!a4i || _analysisAbort) { resetBtn(); return }
+  if (!a4i || _analysisAbort) { setProgress("❌ 产业趋势分析失败，请重试", 35); setTimeout(() => resetBtn(), 2000); return }
   // 缓存产业知识
   await db.addMemory('interest', '产业趋势分析:\n' + a4i.slice(0, 500), 'analysis')
 
   // Agent3 组合策略
   setProgress('🎯 组合策略分析...', 55)
   a3 = await callDS(P3, `学情:\n${a2}\n\n产业趋势:\n${a4i}`, S.thinkModel)
-  if (!a3 || _analysisAbort) { resetBtn(); return }
+  if (!a3 || _analysisAbort) { setProgress("❌ 组合策略分析失败，请重试", 55); setTimeout(() => resetBtn(), 2000); return }
 
   // Agent4 专业院校
   setProgress('🏫 专业院校匹配...', 75)
   a4m = await callDS(P4M, `策略:\n${a3}\n\n产业趋势:\n${a4i}`, S.thinkModel)
-  if (!a4m || _analysisAbort) { resetBtn(); return }
+  if (!a4m || _analysisAbort) { setProgress("❌ 专业院校匹配失败，请重试", 75); setTimeout(() => resetBtn(), 2000); return }
 
   // Agent1 总控报告
   setProgress('📋 [5/5] 生成总控报告中...', 90)
