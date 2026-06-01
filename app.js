@@ -566,83 +566,15 @@ async function buildKnowledgeContext() {
     const recent = all.filter(m => m.type === "interest" || m.type === "search")
       .sort((a, b) => b.timestamp - a.timestamp).slice(0, 5)
     if (!recent.length) return ""
-    return "
-
-【最近搜索/知识参考（供参考，不冲突时使用）】
-" + recent.map(r => {
+    let k = "\n\n【搜索/知识参考】\n"
+    k += recent.map(r => {
       const content = typeof r.content === "string" ? r.content.slice(0, 200) : ""
       return "- " + (r.date || "") + ": " + content
-    }).join("
-") + "
-"
+    }).join("\n")
+    k += "\n"
+    return k
   } catch(e) { return "" }
 }
-
-async function runFullAnalysis() {
-  const grades = await db.getAllGrades()
-  if (!grades.length) { toast('请先导入成绩'); return }
-  if (!S.apiKey) { toast('请先配置 API Key'); return }
-
-  const btn = $('btnAnalyze')
-  const progress = $('progressBar')
-  btn.textContent = '⏳ 分析中...'
-  btn.disabled = true
-  if (progress) progress.classList.remove('hidden')
-  _analysisAbort = false
-
-  const gradeText = buildGradeContext(grades)
-  const knowText = await buildKnowledgeContext()
-  let a2, a4i, a3, a4m, a1
-
-  // Agent2 学情分析
-  setProgress('📊 学情分析...', 15)
-  a2 = await callDS(P2, '成绩数据:\n' + gradeText, S.thinkModel)
-  if (!a2 || _analysisAbort) { resetBtn(); return }
-
-  // Agent4 产业趋势
-  setProgress('🏭 产业趋势分析...', 35)
-  a4i = await callDS(P4I, '学情数据:\n' + a2, S.thinkModel)
-  if (!a4i || _analysisAbort) { resetBtn(); return }
-  // 缓存产业知识
-  await db.addMemory('interest', '产业趋势分析:\n' + a4i.slice(0, 500), 'analysis')
-
-  // Agent3 组合策略
-  setProgress('🎯 组合策略分析...', 55)
-  a3 = await callDS(P3, `学情:\n${a2}\n\n产业趋势:\n${a4i}`, S.thinkModel)
-  if (!a3 || _analysisAbort) { resetBtn(); return }
-
-  // Agent4 专业院校
-  setProgress('🏫 专业院校匹配...', 75)
-  a4m = await callDS(P4M, `策略:\n${a3}\n\n产业趋势:\n${a4i}`, S.thinkModel)
-  if (!a4m || _analysisAbort) { resetBtn(); return }
-
-  // Agent1 总控报告
-  setProgress('📋 生成总控报告...', 90)
-  a1 = await callDS(P1,
-    `【Agent2 学情报告】\n${a2}\n\n【Agent4 产业趋势】\n${a4i}\n\n【Agent3 组合策略】\n${a3}\n\n【Agent4 专业院校】\n${a4m}\n\n请整合以上所有分析结果，输出完整结构化报告。`,
-    S.thinkModel
-  )
-
-  if (a1 && !_analysisAbort) {
-    await db.saveReport(a1, a1.slice(0, 200), [], 'manual', 'v1.0')
-    renderReport(a1)
-    setProgress('✅ 报告生成完成', 100)
-    sendAlert('📋 新报告已生成', '全链路分析完成')
-    toast('✅ 全链路分析完成')
-    // 切换到报告 Tab
-    setTimeout(() => switchTab('tabReports'), 500)
-  }
-  resetBtn()
-  function resetBtn() { btn.textContent = '🔄 全链路分析'; btn.disabled = false; if (progress) progress.classList.add('hidden') }
-}
-
-function setProgress(text, pct) {
-  const el = $('progressText')
-  const bar = $('progressFill')
-  if (el) el.textContent = text
-  if (bar) bar.style.width = pct + '%'
-}
-
 // ===================== 学情 Tab 渲染 =====================
 
 const TIER_MAP = { 优势: { color: 'green', label: '优势' }, 稳定: { color: 'blue', label: '稳定' }, 临界提分: { color: 'orange', label: '临界' }, 薄弱: { color: 'red', label: '薄弱' } }
