@@ -5,6 +5,14 @@
 - 所有文件写入统一用 Python open().write() 方式
 - 每次修改前先读取原文件，修改后验证
 
+## 同步更新强制规则
+每次修改、更新或推送前，必须执行以下步骤：
+1. 读取所有 memory/ 下的文件，判断本次改动是否需要同步更新
+2. 如果修改了知识库（policy/universities/majors/industry），同步更新 index.json 的新鲜度索引
+3. 如果修改了学生信息/家庭信息/偏好，同步更新 MEMORY.md
+4. 如果改动了功能/版本/文件结构，同步更新 README.md（版本号、日期、改动说明、文件清单等）
+5. 全部同步完后，再 git add → commit → push
+
 ## 文件结构
 - index.html + app.js = PAD端App（单页应用）
 - agent2.py = 命令行版Agent2（备用）
