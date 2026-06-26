@@ -1,6 +1,6 @@
 {
-  "version": "1.1",
-  "updated": "2026-05-29",
+  "version": "2.0",
+  "updated": "2026-06-26",
   "description": "TIPS 知识新鲜度索引 — 过期后自动触发搜索刷新",
   "entries": [
     {
@@ -8,10 +8,11 @@
       "title": "江苏新高考3+1+2政策",
       "category": "policy",
       "filename": "policy/江苏新高考3+1+2.md",
-      "fetched": "2026-05-29",
-      "expires": "2026-08-27",
+      "fetched": "2026-06-26",
+      "expires": "2027-06-01",
       "source": "江苏省教育考试院",
-      "status": "ready"
+      "status": "ready",
+      "note": "已补充物化地vs物化生对比+2026选科覆盖率"
     },
     {
       "id": "policy-002",
@@ -19,7 +20,7 @@
       "category": "policy",
       "filename": "policy/赋分规则.md",
       "fetched": "2026-05-29",
-      "expires": "2026-08-27",
+      "expires": "2027-06-01",
       "source": "江苏省教育考试院",
       "status": "ready"
     },
@@ -29,7 +30,7 @@
       "category": "universities",
       "filename": "universities/985高校优势专业.md",
       "fetched": "2026-05-29",
-      "expires": "2026-11-25",
+      "expires": "2027-03-01",
       "source": "教育部第四轮学科评估+招生数据",
       "status": "ready"
     },
@@ -39,7 +40,7 @@
       "category": "universities",
       "filename": "universities/211高校王牌专业.md",
       "fetched": "2026-05-29",
-      "expires": "2026-11-25",
+      "expires": "2027-03-01",
       "source": "教育部第四轮学科评估+招生数据",
       "status": "ready"
     },
@@ -48,30 +49,44 @@
       "title": "江苏院校录取数据",
       "category": "universities",
       "filename": "universities/江苏院校录取数据.md",
-      "fetched": "2026-05-29",
-      "expires": "2026-11-25",
+      "fetched": "2026-06-26",
+      "expires": "2027-07-01",
       "source": "江苏省教育考试院2025年投档线",
-      "status": "ready"
+      "status": "ready",
+      "note": "已更新2025年官方投档线+2026年批次线预测"
     },
     {
       "id": "major-001",
       "title": "物化生组合可报专业",
       "category": "majors",
       "filename": "majors/物化生可报专业.md",
-      "fetched": "2026-05-29",
-      "expires": "2026-11-25",
-      "source": "教育部选科指引+高校招生简章",
-      "status": "ready"
+      "fetched": "2026-06-26",
+      "expires": "2027-03-01",
+      "source": "教育部选科指引+麦可思2026蓝皮书",
+      "status": "ready",
+      "note": "已整合2026年最新薪资排名+专业热度变化"
+    },
+    {
+      "id": "major-002",
+      "title": "物化地组合可报专业完整清单",
+      "category": "majors",
+      "filename": "majors/物化地可报专业.md",
+      "fetched": "2026-06-26",
+      "expires": "2027-03-01",
+      "source": "教育部选科指引+各高校2026年招生简章",
+      "status": "ready",
+      "note": "含物化地vs物化生对比+完整16类专业清单+就业导向推荐+受限专业"
     },
     {
       "id": "ind-001",
-      "title": "国家战略新兴产业方向",
+      "title": "国家战略产业方向",
       "category": "industry",
       "filename": "industry/国家重点产业.md",
-      "fetched": "2026-05-29",
-      "expires": "2026-08-27",
-      "source": "十五五规划纲要+智联招聘2026Q1",
-      "status": "ready"
+      "fetched": "2026-06-26",
+      "expires": "2027-03-01",
+      "source": "十五五就业优先规划+麦可思2026蓝皮书",
+      "status": "ready",
+      "note": "已整合十五五规划中期+AI就业影响+教育部2026新专业目录"
     },
     {
       "id": "ind-002",
@@ -79,15 +94,15 @@
       "category": "industry",
       "filename": "industry/江苏优势产业.md",
       "fetched": "2026-05-29",
-      "expires": "2026-08-27",
+      "expires": "2027-03-01",
       "source": "江苏省工信厅+各地市统计局",
       "status": "ready"
     }
   ],
   "rules": {
-    "policy_refresh_days": 90,
+    "policy_refresh_days": 180,
     "university_refresh_days": 180,
     "major_refresh_days": 180,
-    "industry_refresh_days": 90
+    "industry_refresh_days": 180
   }
 }
