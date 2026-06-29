@@ -70,6 +70,13 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
 
 // ===================== CSV 迁移 =====================
 
+/** 获取选科对应的核心科目 */
+function getCoreSubjects(combo) {
+  return combo === '物化地'
+    ? ['语文', '数学', '英语', '物理', '化学', '地理']
+    : ['语文', '数学', '英语', '物理', '化学', '生物']
+}
+
 async function migrateCSVtoGrades() {
   const raw = await db.getSetting('csvRaw')
   if (!raw) return
@@ -78,8 +85,15 @@ async function migrateCSVtoGrades() {
 
   const lines = raw.split('\n').filter(l => l.trim())
   if (lines.length < 2) return
+  // 检测横向格式
+  const firstLine = lines[0].split(',').map(s => s.trim())
+  if (firstLine[0] === '科目') {
+    await parseHorizontalCSV(raw)
+    return
+  }
+
   const h = lines[0].split(',').map(s => s.trim())
-  const CORE = ['语文', '数学', '英语', '物理', '化学', '生物']
+  const CORE = getCoreSubjects(S.studentCombo)
   const MAXS = { 语文: 150, 数学: 150, 英语: 150, 物理: 100, 化学: 100, 生物: 100, 政治: 100, 历史: 100, 地理: 100 }
   const dash = String.fromCharCode(8212)
 
@@ -110,6 +124,60 @@ async function migrateCSVtoGrades() {
       })
     }
   }
+}
+
+/** 解析横向格式 CSV：科目为行，考试为列 */
+async function parseHorizontalCSV(raw) {
+  const lines = raw.split('\n').filter(l => l.trim())
+  if (lines.length < 4) { toast('CSV横向格式数据不足'); return }
+  const MAXS = { 语文: 150, 数学: 150, 英语: 150, 物理: 100, 化学: 100, 生物: 100, 政治: 100, 历史: 100, 地理: 100 }
+
+  // 第1行: 考试名称（跳过"科目"）
+  const examNames = lines[0].split(',').map(s => s.trim()).slice(1)
+  // 第2行: 考试日期（跳过"时间"）
+  const examDates = lines[1].split(',').map(s => s.trim()).slice(1)
+
+  // 逐行解析科目
+  for (let i = 2; i < lines.length; i++) {
+    const cells = lines[i].split(',').map(s => s.trim())
+    const subject = cells[0]
+    if (!subject || subject === '总分' || subject === '总分(6科)' || subject === '总分(9科)') continue
+
+    for (let j = 0; j < examNames.length; j++) {
+      const scoreStr = cells[j + 1]
+      if (!scoreStr || scoreStr === '—' || scoreStr === '-') continue
+      const score = parseFloat(scoreStr)
+      if (isNaN(score)) continue
+      const date = examDates[j] || ''
+      const type = examNames[j] || ''
+      // 根据日期判断学年学期
+      const month = parseInt(date.split('.')[1]) || 0
+      const ys = (month >= 2 && month <= 7) ? '高一下' : '高一上'
+      await db.add('grades', {
+        date, type, subject, score,
+        fullMark: MAXS[subject] || 100,
+        yearSemester: ys,
+        notes: '',
+      })
+    }
+  }
+
+  // 去重：删除已有的同日期同类型数据（水平格式导入用 subject 去重）
+  const existing = await db.getAll('grades')
+  const seen = new Set()
+  for (const g of existing) {
+    const key = g.date + '|' + g.type + '|' + g.subject
+    if (seen.has(key)) { await db.del('grades', g.id) }
+    else seen.add(key)
+  }
+
+  // 写入 gradeVersion 标记变化
+  await db.setSetting("gradeVersion", String(Date.now()))
+  updateCsvBadge()
+  toast('✅ 横向成绩解析完成')
+  // 检查波动
+  const warns = await checkVolatility()
+  if (warns) await showVolatilityAlert(warns)
 }
 
 // ===================== 设置 =====================
@@ -319,6 +387,12 @@ async function callDSVision(sys, imageB64) {
 }
 
 async function parseAndSaveCSV(raw) {
+  // 检测横向格式（首行以"科目"开头）
+  const firstLine = raw.split('\n').filter(l => l.trim())[0]
+  if (firstLine && firstLine.split(',').map(s => s.trim())[0] === '科目') {
+    await parseHorizontalCSV(raw)
+    return
+  }
   // 去重: 删除已存在的同日期同类型数据
   const existingGrades = await db.getAll('grades')
   const lines0 = raw.split('\n').filter(l => l.trim())
@@ -343,7 +417,7 @@ async function parseAndSaveCSV(raw) {
   const lines = raw.split('\n').filter(l => l.trim())
   if (lines.length < 2) { toast('CSV格式错误'); return }
   const h = lines[0].split(',').map(s => s.trim())
-  const CORE = ['语文', '数学', '英语', '物理', '化学', '生物']
+  const CORE = getCoreSubjects(S.studentCombo)
   const MAXS = { 语文: 150, 数学: 150, 英语: 150, 物理: 100, 化学: 100, 生物: 100, 政治: 100, 历史: 100, 地理: 100 }
   const dash = String.fromCharCode(8212)
 
@@ -493,7 +567,7 @@ async function sendMessage() {
   const ctx = await buildContext()
   const recentHistory = chatHistory.slice(-8).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }))
   const historyContext = recentHistory.length ? '\n\n【最近对话】\n' + recentHistory.map(m => (m.role === 'user' ? 'Alan: ' : 'TIPS: ') + m.content).join('\n') + '\n\n---\n' : ''
-  const reply = await callDS(P0, ctx + historyContext + 'Alan: ' + txt)
+  const reply = await callDS(P0(S.studentCombo), ctx + historyContext + 'Alan: ' + txt)
   chatHistory.pop()
 
   if (reply) {
@@ -610,30 +684,31 @@ async function runFullAnalysis() {
 
   // Agent2 学情分析
   setProgress('📊 学情分析...', 15)
+  const combo = S.studentCombo
   a2 = await callDS(P2, '成绩数据:\n' + gradeText, "deepseek-v4-flash")
   if (!a2 || _analysisAbort) { resetBtn(); return }
 
   // Agent4 产业趋势
   setProgress('🏭 产业趋势分析...', 35)
-  a4i = await callDS(P4I, '学情数据:\n' + a2, 'deepseek-v4-pro')
+  a4i = await callDS(P4I(combo), '学情数据:\n' + a2, 'deepseek-v4-pro')
   if (!a4i || _analysisAbort) { setProgress("❌ 产业趋势分析失败，请重试", 35); setTimeout(() => resetBtn(), 2000); return }
   // 缓存产业知识
   await db.addMemory('interest', '产业趋势分析:\n' + a4i.slice(0, 500), 'analysis')
 
   // Agent3 组合策略
   setProgress('🎯 组合策略分析...', 55)
-  a3 = await callDS(P3, `学情:\n${a2}\n\n产业趋势:\n${a4i}`, S.thinkModel)
+  a3 = await callDS(P3(combo), `学情:\n${a2}\n\n产业趋势:\n${a4i}`, S.thinkModel)
   if (!a3 || _analysisAbort) { setProgress("❌ 组合策略分析失败，请重试", 55); setTimeout(() => resetBtn(), 2000); return }
 
   // Agent4 专业院校
   setProgress('🏫 专业院校匹配...', 75)
-  a4m = await callDS(P4M, `策略:\n${a3}\n\n产业趋势:\n${a4i}`, S.thinkModel)
+  a4m = await callDS(P4M(combo), `策略:\n${a3}\n\n产业趋势:\n${a4i}`, S.thinkModel)
   if (!a4m || _analysisAbort) { setProgress("❌ 专业院校匹配失败，请重试", 75); setTimeout(() => resetBtn(), 2000); return }
 
   // Agent1 总控报告
   var _saveThink = S.thinking; S.thinking = false
   setProgress('📋 [5/5] 生成总控报告中...', 90)
-  a1 = await callDS(P1,
+  a1 = await callDS(P1(combo),
     `【Agent2 学情报告】\n${a2}\n\n【Agent4 产业趋势】\n${a4i}\n\n【Agent3 组合策略】\n${a3}\n\n【Agent4 专业院校】\n${a4m}\n\n请整合以上所有分析结果，输出完整结构化报告。`,
     'deepseek-v4-pro'
   )
@@ -699,8 +774,8 @@ async function renderGradesTab() {
 
 function renderSubjectCards(grades, container) {
   const sorted = [...grades].sort((a, b) => a.date.localeCompare(b.date))
-  const MAXS = { 语文: 150, 数学: 150, 英语: 150, 物理: 100, 化学: 100, 生物: 100 }
-  const subjects = ['语文', '数学', '英语', '物理', '化学', '生物']
+  const MAXS = { 语文: 150, 数学: 150, 英语: 150, 物理: 100, 化学: 100, 生物: 100, 地理: 100 }
+  const subjects = getCoreSubjects(S.studentCombo)
 
   let html = '<div class="subject-grid">'
   for (const subj of subjects) {
