@@ -23,12 +23,14 @@ const TC = {
   },
 
   /** 各科成绩趋势折线图 */
-  subjectTrend(canvasId, grades) {
+  subjectTrend(canvasId, grades, combo) {
     const canvas = document.getElementById(canvasId)
     if (!canvas || !grades.length) return
     TC._destroy(canvasId)
     const dark = TC._isDark()
-    const subjects = ['语文','数学','英语','物理','化学','生物']
+    const subjects = combo === '物化地'
+      ? ['语文','数学','英语','物理','化学','地理']
+      : ['语文','数学','英语','物理','化学','生物']
     // 按时间排序
     const sorted = [...grades].sort((a,b) => a.date.localeCompare(b.date))
     const labels = sorted.map(g => g.date.slice(-5))
@@ -61,13 +63,15 @@ const TC = {
   },
 
   /** 能力雷达图 (最近一次得分率) */
-  abilityRadar(canvasId, grades) {
+  abilityRadar(canvasId, grades, combo) {
     const canvas = document.getElementById(canvasId)
     if (!canvas || !grades.length) return
     TC._destroy(canvasId)
     const dark = TC._isDark()
-    const subjects = ['语文','数学','英语','物理','化学','生物']
-    const MAX = {语文:150,数学:150,英语:150,物理:100,化学:100,生物:100}
+    const subjects = combo === '物化地'
+      ? ['语文','数学','英语','物理','化学','地理']
+      : ['语文','数学','英语','物理','化学','生物']
+    const MAX = {语文:150,数学:150,英语:150,物理:100,化学:100,生物:100,地理:100}
     const last = grades[grades.length - 1]
 
     TC._charts[canvasId] = new Chart(canvas, {
@@ -102,17 +106,20 @@ const TC = {
   },
 
   /** 总分趋势折线图 (6科/9科) */
-  totalTrend(canvasId, grades) {
+  totalTrend(canvasId, grades, combo) {
     const canvas = document.getElementById(canvasId)
     if (!canvas || !grades.length) return
     TC._destroy(canvasId)
     const dark = TC._isDark()
     const sorted = [...grades].sort((a,b) => a.date.localeCompare(b.date))
     const labels = sorted.map(g => g.date.slice(-5))
+    const CORE6 = combo === '物化地'
+      ? ['语文','数学','英语','物理','化学','地理']
+      : ['语文','数学','英语','物理','化学','生物']
 
     // 从 grades 计算总分
     const total6 = sorted.map(g => {
-      const c = g.scores; const sum = ['语文','数学','英语','物理','化学','生物']
+      const c = g.scores; const sum = CORE6
         .reduce((s, sub) => s + (c[sub] || 0), 0)
       return sum || null
     })
@@ -134,8 +141,7 @@ const TC = {
 
     // 6科数据
     const t6data = total6.map((v, i) => {
-      // 如果该次考试是9科的，也显示6科值
-      const sum = ['语文','数学','英语','物理','化学','生物'].reduce((s, sub) => s + (sorted[i].scores[sub] || 0), 0)
+      const sum = CORE6.reduce((s, sub) => s + (sorted[i].scores[sub] || 0), 0)
       return sum || null
     })
     datasets.push({ label: '6科总分', data: t6data, borderColor: '#007aff', backgroundColor: '#007aff20', tension: .3, pointRadius: 4, borderWidth: 2, borderDash: [4, 3] })
@@ -159,12 +165,14 @@ const TC = {
   },
 
   /** 各科波动柱状图 (CV值) */
-  volatilityBar(canvasId, grades) {
+  volatilityBar(canvasId, grades, combo) {
     const canvas = document.getElementById(canvasId)
     if (!canvas || grades.length < 2) return
     TC._destroy(canvasId)
     const dark = TC._isDark()
-    const subjects = ['语文','数学','英语','物理','化学','生物']
+    const subjects = combo === '物化地'
+      ? ['语文','数学','英语','物理','化学','地理']
+      : ['语文','数学','英语','物理','化学','生物']
     const sorted = [...grades].sort((a,b) => a.date.localeCompare(b.date))
 
     const cvData = subjects.map(sub => {

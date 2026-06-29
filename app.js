@@ -8,7 +8,7 @@ let S = {}                    // 设置缓存
 let currentSession = ''       // 当前会话ID
 let chatHistory = []
 // 版本
-const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
+  const APP_VER = 'v2.5.0', APP_DATE = '2026-06-29'
           // 当前会话消息 [{role,text,time}]
 
 // ===================== 初始化 =====================
@@ -39,7 +39,7 @@ const APP_VER = 'v2.1.0', APP_DATE = '2026-05-29'
   S.studentName = await db.getSetting('studentName') || 'Alan'
   S.studentSchool = await db.getSetting('studentSchool') || '扬州大学附属中学'
   S.studentGrade = await db.getSetting('studentGrade') || '高一'
-  S.studentCombo = await db.getSetting('studentCombo') || '物化生'
+  S.studentCombo = await db.getSetting('studentCombo') || '物化地'
   S.gradYear = await db.getSetting('gradYear') || 2028
   S.thinking = await db.getSetting('thinking') ?? true
   S.dark = await db.getSetting('darkMode')
@@ -324,7 +324,7 @@ async function handleImageUpload(file) {
 function renderImagePreviewTable(scores) {
   const el = $('imgTable')
   if (!el) return
-  const MAXS = {语文:150,数学:150,英语:150,物理:100,化学:100,生物:100}
+  const MAXS = {语文:150,数学:150,英语:150,物理:100,化学:100,生物:100,地理:100}
   el.innerHTML = Object.entries(scores).map(([s, v]) =>
     `<div class="img-row"><span>${s}</span>
      <input class="img-input" data-subj="${s}" value="${v}" type="number">
@@ -339,7 +339,8 @@ async function confirmImageScores() {
   const type = ($('imgType')?.value) || '考试'
   const ys = ($('imgYS')?.value) || (date >= '2026-03' ? '高一下' : '高一上')
   for (const [subj, score] of Object.entries(scores)) {
-    if (score != null) await db.add('grades', { date, type, subject: subj, score, fullMark: 100, yearSemester: ys, notes: '图片识别' })
+    const max = {语文:150,数学:150,英语:150,物理:100,化学:100,生物:100,地理:100}[subj] || 100
+    if (score != null) await db.add('grades', { date, type, subject: subj, score, fullMark: max, yearSemester: ys, notes: '图片识别' })
   }
   await db.setSetting('gradeVersion', String(Date.now()))
   $('imgModal').classList.remove('open')
@@ -763,10 +764,10 @@ async function renderGradesTab() {
   // 延迟到下一帧渲染图表，避免布局抖动
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      TC.subjectTrend('chartTrend', grades)
-      TC.abilityRadar('chartRadar', grades)
-      TC.totalTrend('chartTotal', grades)
-      TC.volatilityBar('chartVol', grades)
+      TC.subjectTrend('chartTrend', grades, S.studentCombo)
+      TC.abilityRadar('chartRadar', grades, S.studentCombo)
+      TC.totalTrend('chartTotal', grades, S.studentCombo)
+      TC.volatilityBar('chartVol', grades, S.studentCombo)
       _gradesTabPending = false
     })
   })
@@ -1086,7 +1087,7 @@ function saveProfile() {
   S.studentName = ($('editName')?.value || 'Alan').trim()
   S.studentSchool = ($('editSchool')?.value || '扬州大学附属中学').trim()
   S.studentGrade = ($('editGrade')?.value || '高一').trim()
-  S.studentCombo = ($('editCombo')?.value || '物化生').trim()
+  S.studentCombo = ($('editCombo')?.value || '物化地').trim()
   S.gradYear = parseInt($('editGradYear')?.value) || 2028
   saveCfg()
   toast('✅ 信息已保存')
@@ -1331,7 +1332,7 @@ async function renderProfileTab() {
     <input type="file" id="impCfgFile" accept=".json" hidden onchange="importConfig(event)">
 
     <div class="profile-about">
-      <p>TIPS v2.1.0 · 2026-05-29</p>
+      <p>TIPS v2.5.0 · 2026-06-29</p>
       <p style="font-size:11px;color:var(--txt3)">数据仅存储在本设备 IndexedDB</p>
     </div>`
 }

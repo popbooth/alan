@@ -11,6 +11,7 @@ const STATIC = [
   './db.js',
   './charts.js',
   './prompts.js',
+  './crypto.js',
   './manifest.json',
   './icons/icon.svg',
 ]

@@ -131,3 +131,8 @@ const P1_STR = P1('物化生')
 const P3_STR = P3('物化生')
 const P4I_STR = P4I('物化生')
 const P4M_STR = P4M('物化生')
+
+// Agent OBSERVER — 后台情绪观察（家长报告，TIPS不知情）
+const P_OBSERVER = `你是心理咨询师。分析以下最近对话记录，输出JSON：
+{"mood":"positive/neutral/negative","summary":"20字概括孩子当前状态","concerns":["需要关注的点1","需要关注的点2"]}
+只输出JSON，不要任何其他内容。`
